@@ -335,6 +335,84 @@ img.avatar{display:block}
 .rv-photo img{width:104px;height:104px;object-fit:cover;border-radius:14px;border:1px solid var(--hair);display:block}
 .rv-photo select{margin-top:7px;min-height:36px;padding:6px 9px;font-size:13px;border-radius:10px}
 
+/* ============================== the map ============================== */
+:root{ --gold:#E9BE5C; --gold-dim:#B8933F; }
+.map-view{padding-bottom:20px}
+.pmap-wrap{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--hair);background:#0A1421}
+.map-view .pmap-wrap{height:min(58dvh,520px)}
+.pmap{position:absolute;inset:0;overflow:hidden;touch-action:none;cursor:grab;background:#0A1421}
+.pmap:active{cursor:grabbing}
+.pmap-tiles{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform}
+/* OSM's own tiles, turned to fit a navy app: inverted, hue-flipped back to
+   true, then cooled and dimmed so the pins stay the brightest thing. */
+.pmap-tile{position:absolute;top:0;left:0;width:256px;height:256px;transform-origin:0 0;
+  filter:invert(1) hue-rotate(180deg) saturate(.55) brightness(.82) contrast(1.05);
+  opacity:.92;pointer-events:none}
+.pmap-tile.dead{opacity:0}
+.pmap-pins{position:absolute;inset:0;pointer-events:none}
+.pin{
+  position:absolute;top:0;left:0;width:38px;height:38px;margin:-19px 0 0 -19px;pointer-events:auto;
+  border-radius:50%;border:2px solid rgba(255,255,255,.85);background:#12233A;
+  box-shadow:0 3px 12px rgba(0,0,0,.55);will-change:transform;
+}
+.pin-face{position:absolute;inset:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:14px;color:#C7D6EA;background:linear-gradient(160deg,#1B3151,#122238)}
+.pin-face img{width:100%;height:100%;object-fit:cover;display:block}
+.pin-kind{
+  position:absolute;bottom:-4px;inset-inline-end:-4px;width:18px;height:18px;border-radius:50%;
+  background:#0B1626;border:1.5px solid rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;
+}
+.pin-kind svg{width:11px;height:11px;fill:none;stroke:#DCE7F5;stroke-width:2.1;stroke-linejoin:round;stroke-linecap:round}
+.pin.star{border-color:var(--gold);box-shadow:0 3px 14px rgba(233,190,92,.4)}
+.pin.star .pin-kind{border-color:var(--gold-dim)}
+.pin:active{transform-origin:center;filter:brightness(1.2)}
+.pmap-credit{
+  position:absolute;bottom:4px;inset-inline-start:8px;font-size:9.5px;color:rgba(190,205,225,.5);
+  pointer-events:none;letter-spacing:.01em;
+}
+.pmap-zoom{position:absolute;top:10px;inset-inline-end:10px;display:flex;flex-direction:column;gap:6px}
+.pmap-btn{
+  width:36px;height:36px;border-radius:11px;border:1px solid var(--hair-2);background:rgba(10,20,34,.82);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  font-size:19px;line-height:1;color:var(--fg);display:flex;align-items:center;justify-content:center;
+}
+.pmap-btn:active{background:rgba(255,255,255,.2)}
+.pmap-banner{
+  position:absolute;left:10px;right:10px;bottom:10px;padding:9px 12px;border-radius:12px;
+  background:rgba(10,20,34,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--hair-2);font-size:13px;color:var(--dim);
+  display:none;align-items:center;gap:10px;
+}
+.pmap-banner.on{display:flex}
+.pmap-banner.pick{color:var(--fg);border-color:rgba(255,255,255,.3)}
+.banner-x{margin-inline-start:auto;color:var(--dim);font-size:13px;text-decoration:underline;white-space:nowrap}
+.pmap-mini{display:block;width:100%;position:relative;height:168px;border-bottom:1px solid var(--hair)}
+.pmap-mini #miniMap{position:absolute;inset:0}
+.pmap-mini .pmap{pointer-events:none}
+.pmap-mini-cta{
+  position:absolute;bottom:9px;inset-inline-end:9px;font-size:12px;padding:6px 11px;border-radius:9px;
+  background:rgba(10,20,34,.86);border:1px solid var(--hair-2);color:var(--fg);
+}
+.kindchip{
+  width:34px;height:34px;flex:none;border-radius:11px;border:1px solid var(--hair);background:var(--glass);
+  display:flex;align-items:center;justify-content:center;
+}
+.kindchip.small{width:26px;height:26px;border-radius:8px}
+.kindchip svg{width:16px;height:16px;fill:none;stroke:var(--dim);stroke-width:1.7;stroke-linejoin:round;stroke-linecap:round}
+.kindchip.small svg{width:13px;height:13px}
+.mini .nm{display:flex;flex-direction:column;gap:1px}
+.mini .nm .sub{font-size:12px;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ============================== the crown ============================= */
+.crown{fill:none;stroke:currentColor;color:var(--faint);transition:color .18s,filter .18s}
+.crown.on{color:var(--gold);fill:var(--gold);filter:drop-shadow(0 0 7px rgba(233,190,92,.45))}
+.crown-btn{color:var(--faint)}
+.crown-btn.on{color:var(--gold)}
+.crown-btn:active{transform:scale(.9)}
+.crown-mini{display:inline-flex;vertical-align:-2px;margin-inline-start:5px}
+.chip .crown{vertical-align:-2px;margin-inline-end:2px}
+.chip.on .crown{color:var(--gold-dim);fill:var(--gold-dim)}
+
 /* ============================ modal ============================ */
 #modal{position:fixed;inset:0;z-index:80;display:none;align-items:flex-end;justify-content:center;background:rgba(3,7,13,.76);backdrop-filter:blur(3px)}
 #modal.on{display:flex}
@@ -492,6 +570,29 @@ const I18N = {
     'set.about': 'About',
     'set.aboutText': 'Palantir keeps everything on this phone. There is no account and no server: profiles, photos and notes live in the browser’s own storage. Back up regularly — clearing site data erases it.',
 
+    'tab.map': 'Map',
+    'map.title': 'Map', 'map.fav': 'Favourites', 'map.filter': 'What to show',
+    'map.kinds': 'Kinds of place',
+    'map.locating': 'Placing {n}…', 'map.noPlaces': 'Nothing to put on the map yet.\nAdd where someone lives or works.',
+    'map.unresolved': "Couldn't be found: {list}", 'map.setOnMap': 'Place by hand',
+    'map.tapToSet': 'Tap the map to place {label}', 'map.pinSet': 'Placed.',
+    'map.openIn': 'Open in Maps', 'map.openProfile': 'Open profile',
+    'map.movePin': 'Move the pin', 'map.clearPin': 'Undo the hand-placed pin',
+    'map.recenter': 'Fit everything', 'map.person': '{name} on the map',
+    'map.count': '{places} places · {people} people',
+    'map.tiles': 'Map data © OpenStreetMap contributors',
+    'map.offline': 'Map tiles need a connection. Pins are still where they belong.',
+    'kind.home': 'Home', 'kind.family': 'Family home', 'kind.work': 'Work',
+    'kind.former': 'Former work', 'kind.school': 'Studied', 'kind.other': 'Place',
+
+    'per.star': 'Mark as important', 'per.unstar': 'Remove the crown',
+    'per.places': 'Places', 'per.addPlace': 'Add a place',
+    'per.placeLabel': 'Address or place', 'per.placeKind': 'Kind',
+    'per.noPlaces': 'No addresses yet. Fill in where they live, work or studied — those land on the map.',
+    'per.seeMap': 'See on the map',
+    'ppl.fav': 'Favourites',
+    'f.schools': 'Studied at',
+
     'c.cancel': 'Cancel', 'c.save': 'Save', 'c.delete': 'Delete', 'c.add': 'Add',
     'c.done': 'Done', 'c.back': 'Back', 'c.ok': 'OK',
     'c.error': 'Something went wrong', 'c.confirm': 'Are you sure?',
@@ -577,6 +678,29 @@ const I18N = {
     'set.storage': '{people} osób · {photos} zdjęć · {size}',
     'set.about': 'O aplikacji',
     'set.aboutText': 'Palantir trzyma wszystko na tym telefonie. Nie ma konta ani serwera: profile, zdjęcia i notatki leżą w pamięci przeglądarki. Rób kopie zapasowe — wyczyszczenie danych strony kasuje je bezpowrotnie.',
+
+    'tab.map': 'Mapa',
+    'map.title': 'Mapa', 'map.fav': 'Ulubieni', 'map.filter': 'Co pokazywać',
+    'map.kinds': 'Rodzaje miejsc',
+    'map.locating': 'Ustawiam {n}…', 'map.noPlaces': 'Nie ma jeszcze czego pokazać.\nDopisz, gdzie ktoś mieszka albo pracuje.',
+    'map.unresolved': 'Nie udało się znaleźć: {list}', 'map.setOnMap': 'Wskaż ręcznie',
+    'map.tapToSet': 'Dotknij mapy, żeby wskazać: {label}', 'map.pinSet': 'Ustawiono.',
+    'map.openIn': 'Otwórz w Mapach', 'map.openProfile': 'Otwórz profil',
+    'map.movePin': 'Przesuń pinezkę', 'map.clearPin': 'Cofnij ręczną pinezkę',
+    'map.recenter': 'Pokaż wszystko', 'map.person': '{name} na mapie',
+    'map.count': '{places} miejsc · {people} osób',
+    'map.tiles': 'Dane mapy © OpenStreetMap contributors',
+    'map.offline': 'Kafelki mapy wymagają połączenia. Pinezki i tak są na swoich miejscach.',
+    'kind.home': 'Dom', 'kind.family': 'Dom rodzinny', 'kind.work': 'Praca',
+    'kind.former': 'Dawna praca', 'kind.school': 'Szkoła', 'kind.other': 'Miejsce',
+
+    'per.star': 'Oznacz jako ważną osobę', 'per.unstar': 'Zdejmij koronę',
+    'per.places': 'Miejsca', 'per.addPlace': 'Dodaj miejsce',
+    'per.placeLabel': 'Adres lub miejsce', 'per.placeKind': 'Rodzaj',
+    'per.noPlaces': 'Brak adresów. Uzupełnij, gdzie mieszka, pracuje albo się uczył — trafi to na mapę.',
+    'per.seeMap': 'Pokaż na mapie',
+    'ppl.fav': 'Ulubieni',
+    'f.schools': 'Uczelnie i szkoły',
 
     'c.cancel': 'Anuluj', 'c.save': 'Zapisz', 'c.delete': 'Usuń', 'c.add': 'Dodaj',
     'c.done': 'Gotowe', 'c.back': 'Wstecz', 'c.ok': 'OK',
@@ -664,6 +788,29 @@ const I18N = {
     'set.about': 'אודות',
     'set.aboutText': 'Palantir שומר הכול על הטלפון הזה. אין חשבון ואין שרת: הפרופילים, התמונות וההערות יושבים באחסון של הדפדפן. גבה באופן קבוע — ניקוי נתוני האתר מוחק אותם.',
 
+    'tab.map': 'מפה',
+    'map.title': 'מפה', 'map.fav': 'מועדפים', 'map.filter': 'מה להציג',
+    'map.kinds': 'סוגי מקומות',
+    'map.locating': 'ממקם {n}…', 'map.noPlaces': 'אין עדיין מה להציג על המפה.\nהוסף היכן מישהו גר או עובד.',
+    'map.unresolved': 'לא נמצא: {list}', 'map.setOnMap': 'מקם ידנית',
+    'map.tapToSet': 'הקש על המפה כדי למקם את {label}', 'map.pinSet': 'מוקם.',
+    'map.openIn': 'פתח במפות', 'map.openProfile': 'פתח פרופיל',
+    'map.movePin': 'הזז את הסיכה', 'map.clearPin': 'בטל את המיקום הידני',
+    'map.recenter': 'הצג הכול', 'map.person': '{name} על המפה',
+    'map.count': '{places} מקומות · {people} אנשים',
+    'map.tiles': 'נתוני מפה © OpenStreetMap contributors',
+    'map.offline': 'אריחי המפה דורשים חיבור. הסיכות עדיין במקומן.',
+    'kind.home': 'בית', 'kind.family': 'בית ההורים', 'kind.work': 'עבודה',
+    'kind.former': 'עבודה קודמת', 'kind.school': 'לימודים', 'kind.other': 'מקום',
+
+    'per.star': 'סמן כאדם חשוב', 'per.unstar': 'הסר את הכתר',
+    'per.places': 'מקומות', 'per.addPlace': 'הוסף מקום',
+    'per.placeLabel': 'כתובת או מקום', 'per.placeKind': 'סוג',
+    'per.noPlaces': 'אין עדיין כתובות. מלא היכן הוא גר, עובד או למד — וזה יופיע על המפה.',
+    'per.seeMap': 'הצג על המפה',
+    'ppl.fav': 'מועדפים',
+    'f.schools': 'מוסדות לימוד',
+
     'c.cancel': 'ביטול', 'c.save': 'שמור', 'c.delete': 'מחק', 'c.add': 'הוסף',
     'c.done': 'סיום', 'c.back': 'חזרה', 'c.ok': 'אישור',
     'c.error': 'משהו השתבש', 'c.confirm': 'בטוח?',
@@ -699,6 +846,7 @@ const FIELDS = [
   { k: 'familyHome',    api: 'family_home',   kind: 'text' },
   { k: 'currentWork',   api: 'current_work',  kind: 'list' },
   { k: 'formerWork',    api: 'former_work',   kind: 'list' },
+  { k: 'schools',       api: 'schools',       kind: 'list' },
   { k: 'pets',          api: 'pets',          kind: 'list' },
   { k: 'achievements',  api: 'achievements',  kind: 'list' },
   { k: 'relationships', api: 'relationships', kind: 'list' },
@@ -709,10 +857,46 @@ const FIELDS = [
 
 function blankPerson(){
   const p = { id: uid(), name: '', aka: [], category: 'other', facts: [], avatarId: '',
+              starred: false, places: [], pins: {},
               createdAt: nowISO(), updatedAt: nowISO() };
   for (const f of FIELDS) p[f.k] = f.kind === 'list' ? [] : '';
   return p;
 }
+
+/* ------------------------------- places ------------------------------ */
+/* Addresses are not a separate thing to maintain — they are read straight
+   out of the fields you already fill in, so a profile lands on the map the
+   moment you say where someone lives. `places` holds anything extra you add
+   by hand; `pins` holds coordinates you set yourself, which always win. */
+const PLACE_KINDS = ['home', 'family', 'work', 'former', 'school', 'other'];
+const KIND_OF_FIELD = { residence: 'home', familyHome: 'family', currentWork: 'work',
+                        formerWork: 'former', schools: 'school' };
+
+function placesOf(p){
+  const out = [];
+  const push = (key, kind, label) => {
+    const l = String(label || '').trim();
+    if (l) out.push({ key, kind, label: l, personId: p.id });
+  };
+  push('home', 'home', p.residence);
+  push('family', 'family', p.familyHome);
+  for (const [field, kind] of [['currentWork', 'work'], ['formerWork', 'former'], ['schools', 'school']])
+    (p[field] || []).forEach((v, i) => push(kind + ':' + i, kind, v));
+  for (const x of p.places || []) push('extra:' + x.id, x.kind || 'other', x.label);
+  return out;
+}
+/* label → the string we hand the geocoder; a bare company name is hopeless
+   without a city, so borrow the person's town when the label has no comma. */
+function geoQuery(place, person){
+  const l = place.label;
+  if (/\d/.test(l) && l.includes(',')) return l;
+  if (l.includes(',')) return l;
+  const city = (person.residence || '').split(',')[0].trim();
+  if (city && place.kind !== 'home' && place.kind !== 'family' && !l.toLowerCase().includes(city.toLowerCase()))
+    return l + ', ' + city;
+  return l;
+}
+const normQuery = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
 function catLabel(id){
   if (DEFAULT_CATS.includes(id)) return t('cat.' + id);
   return id;
@@ -723,7 +907,7 @@ function allCats(){
 }
 
 /* ----------------------------- IndexedDB ----------------------------- */
-const DB_NAME = 'palantir', DB_VER = 1;
+const DB_NAME = 'palantir', DB_VER = 2;
 let _db = null;
 function db(){
   if (_db) return Promise.resolve(_db);
@@ -737,6 +921,9 @@ function db(){
         s.createIndex('personId', 'personId');
       }
       if (!d.objectStoreNames.contains('meta')) d.createObjectStore('meta');
+      /* looked-up coordinates, keyed by the normalised query — one lookup per
+         address ever, shared across everyone who lives on the same street */
+      if (!d.objectStoreNames.contains('geo')) d.createObjectStore('geo');
     };
     r.onsuccess = () => { _db = r.result; res(_db); };
     r.onerror = () => rej(r.error);
@@ -892,6 +1079,12 @@ const state = {
   query: '',
   editing: null,
   listening: false,
+  map: null,          // the live Palamap instance, if the map screen is open
+  mapGroup: 'all',
+  mapScope: null,
+  mapView: null,      // remembered centre/zoom
+  mapFitPending: '',
+  picking: null,      // the place waiting for a tap while pinning by hand
 };
 
 async function loadSettings(){
@@ -902,6 +1095,7 @@ async function loadSettings(){
     model: s.model || DEFAULT_MODEL,
     pass: s.pass || '',
     categories: s.categories || [],
+    mapKinds: s.mapKinds || PLACE_KINDS.slice(),
   };
   if (!I18N[state.settings.lang]) state.settings.lang = 'en';
   state.lang = state.settings.lang;
@@ -969,6 +1163,280 @@ async function clearDraft(){
 }
 
 /* ===================================================================== */
+/*                          geocoding & the map                          */
+/* ===================================================================== */
+/* Nominatim asks for at most one request a second, so lookups go through a
+   queue and every answer is kept forever in the `geo` store. An address is
+   therefore looked up once, ever — after that the map draws instantly and
+   works offline. */
+const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
+const geoMem = new Map();
+let geoQueue = Promise.resolve(), geoPending = 0;
+
+async function geoLookup(query){
+  const key = normQuery(query);
+  if (!key) return null;
+  if (geoMem.has(key)) return geoMem.get(key);
+  const stored = await DB.get('geo', key);
+  if (stored){ geoMem.set(key, stored); return stored; }
+  return null;
+}
+function geoResolve(query){
+  const key = normQuery(query);
+  if (!key) return Promise.resolve(null);
+  geoPending++;
+  geoQueue = geoQueue.then(async () => {
+    const already = await geoLookup(key);
+    if (already) return already;
+    let hit = null;
+    try {
+      const url = NOMINATIM + '?format=jsonv2&limit=1&addressdetails=0&q=' + encodeURIComponent(query);
+      const res = await fetch(url, { headers: { accept: 'application/json' } });
+      if (res.ok){
+        const [first] = await res.json();
+        if (first) hit = { lat: +first.lat, lon: +first.lon, name: first.display_name || query, at: nowISO() };
+      }
+    } catch { /* offline, blocked, rate-limited — treated the same: unresolved */ }
+    if (hit){ geoMem.set(key, hit); await DB.put('geo', hit, key); }
+    else geoMem.set(key, null);       // remember the miss for this session only
+    await sleep(1100);                // stay inside the usage policy
+    return hit;
+  }).finally(() => { geoPending--; });
+  return geoQueue;
+}
+
+/* ------------------------- web-mercator maths ------------------------ */
+const TILE = 256;
+const lonToX = (lon, z) => (lon + 180) / 360 * TILE * Math.pow(2, z);
+const latToY = (lat, z) => {
+  const s = Math.sin(Math.max(-85.05, Math.min(85.05, lat)) * Math.PI / 180);
+  return (0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)) * TILE * Math.pow(2, z);
+};
+const xToLon = (x, z) => x / (TILE * Math.pow(2, z)) * 360 - 180;
+const yToLat = (y, z) => {
+  const n = Math.PI - 2 * Math.PI * y / (TILE * Math.pow(2, z));
+  return 180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
+};
+
+/* --------------------------- the map itself -------------------------- */
+/* A few hundred lines instead of a mapping library: OSM raster tiles laid
+   out by hand, inverted by a CSS filter so they sit in the app's own dark
+   palette, with the markers in a plain overlay above them. */
+class Palamap {
+  constructor(el, opts = {}){
+    this.el = el;
+    this.interactive = opts.interactive !== false;
+    this.onMarker = opts.onMarker || (() => {});
+    this.onPick = null;                 // set while placing a pin by hand
+    this.center = opts.center || { lat: 52.0, lon: 19.0 };
+    this.zoom = opts.zoom ?? 4;
+    this.minZoom = 2; this.maxZoom = 18;
+    this.markers = [];
+    this.tiles = new Map();
+
+    el.classList.add('pmap');
+    el.innerHTML = `<div class="pmap-tiles"></div><div class="pmap-pins"></div>
+      <div class="pmap-credit">${esc(t('map.tiles'))}</div>`;
+    this.layer = el.querySelector('.pmap-tiles');
+    this.pins = el.querySelector('.pmap-pins');
+
+    if (this.interactive) this.bind();
+    this.ro = new ResizeObserver(() => this.draw());
+    this.ro.observe(el);
+  }
+
+  destroy(){ this.ro.disconnect(); }
+
+  bind(){
+    const el = this.el;
+    const pts = new Map();
+    let start = null;
+
+    el.addEventListener('pointerdown', e => {
+      if (e.target.closest('.pmap-btn')) return;
+      el.setPointerCapture(e.pointerId);
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      start = { center: { ...this.center }, zoom: this.zoom, moved: 0,
+                pts: new Map([...pts].map(([k, v]) => [k, { ...v }])) };
+    });
+
+    el.addEventListener('pointermove', e => {
+      if (!pts.has(e.pointerId) || !start) return;
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const ids = [...start.pts.keys()].filter(id => pts.has(id));
+
+      if (ids.length >= 2){
+        const [a, b] = ids;
+        const d0 = Math.hypot(start.pts.get(a).x - start.pts.get(b).x, start.pts.get(a).y - start.pts.get(b).y);
+        const d1 = Math.hypot(pts.get(a).x - pts.get(b).x, pts.get(a).y - pts.get(b).y);
+        if (d0 > 8) this.zoom = this.clampZoom(start.zoom + Math.log2(d1 / d0));
+        const mid0 = { x: (start.pts.get(a).x + start.pts.get(b).x) / 2, y: (start.pts.get(a).y + start.pts.get(b).y) / 2 };
+        const mid1 = { x: (pts.get(a).x + pts.get(b).x) / 2, y: (pts.get(a).y + pts.get(b).y) / 2 };
+        this.panBy(mid0.x - mid1.x, mid0.y - mid1.y, start.center, start.zoom);
+        start.moved += 20;
+      } else {
+        const id = ids[0];
+        const dx = pts.get(id).x - start.pts.get(id).x;
+        const dy = pts.get(id).y - start.pts.get(id).y;
+        start.moved = Math.max(start.moved, Math.hypot(dx, dy));
+        this.panBy(-dx, -dy, start.center, this.zoom);
+      }
+      this.draw();
+    });
+
+    const up = e => {
+      const wasTap = start && start.moved < 6;
+      pts.delete(e.pointerId);
+      if (!pts.size){
+        if (wasTap && this.onPick){
+          const r = el.getBoundingClientRect();
+          this.onPick(this.unproject(e.clientX - r.left, e.clientY - r.top));
+        }
+        start = null;
+      }
+    };
+    el.addEventListener('pointerup', up);
+    el.addEventListener('pointercancel', up);
+
+    el.addEventListener('wheel', e => {
+      e.preventDefault();
+      const r = el.getBoundingClientRect();
+      this.zoomAround(e.clientX - r.left, e.clientY - r.top, -Math.sign(e.deltaY) * 0.5);
+    }, { passive: false });
+
+    el.addEventListener('dblclick', e => {
+      const r = el.getBoundingClientRect();
+      this.zoomAround(e.clientX - r.left, e.clientY - r.top, 1);
+    });
+  }
+
+  clampZoom(z){ return Math.max(this.minZoom, Math.min(this.maxZoom, z)); }
+
+  panBy(dx, dy, fromCenter, zoom){
+    const z = zoom;
+    const cx = lonToX(fromCenter.lon, z) + dx;
+    const cy = latToY(fromCenter.lat, z) + dy;
+    this.center = { lat: yToLat(cy, z), lon: xToLon(cx, z) };
+  }
+
+  zoomAround(px, py, dz){
+    const before = this.unproject(px, py);
+    this.zoom = this.clampZoom(this.zoom + dz);
+    const after = this.unproject(px, py);
+    this.center = { lat: this.center.lat + (before.lat - after.lat),
+                    lon: this.center.lon + (before.lon - after.lon) };
+    this.draw();
+  }
+
+  size(){ const r = this.el.getBoundingClientRect(); return { w: r.width, h: r.height }; }
+
+  /* screen px → lat/lon */
+  unproject(px, py){
+    const { w, h } = this.size(), z = this.zoom;
+    const cx = lonToX(this.center.lon, z), cy = latToY(this.center.lat, z);
+    return { lat: yToLat(cy + py - h / 2, z), lon: xToLon(cx + px - w / 2, z) };
+  }
+  /* lat/lon → screen px */
+  project(lat, lon){
+    const { w, h } = this.size(), z = this.zoom;
+    return { x: lonToX(lon, z) - lonToX(this.center.lon, z) + w / 2,
+             y: latToY(lat, z) - latToY(this.center.lat, z) + h / 2 };
+  }
+
+  setMarkers(list){ this.markers = list || []; this.draw(); }
+
+  fit(list, pad = 56){
+    const pts = (list || this.markers).filter(m => Number.isFinite(m.lat) && Number.isFinite(m.lon));
+    if (!pts.length) return;
+    const { w, h } = this.size();
+    if (!w || !h) return;
+    if (pts.length === 1){
+      this.center = { lat: pts[0].lat, lon: pts[0].lon };
+      this.zoom = this.clampZoom(12);
+      this.draw();
+      return;
+    }
+    const lats = pts.map(p => p.lat), lons = pts.map(p => p.lon);
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+    const minLon = Math.min(...lons), maxLon = Math.max(...lons);
+    let z = this.maxZoom;
+    for (; z > this.minZoom; z--){
+      const dx = Math.abs(lonToX(maxLon, z) - lonToX(minLon, z));
+      const dy = Math.abs(latToY(minLat, z) - latToY(maxLat, z));
+      if (dx <= w - pad * 2 && dy <= h - pad * 2) break;
+    }
+    this.center = { lat: (minLat + maxLat) / 2, lon: (minLon + maxLon) / 2 };
+    this.zoom = this.clampZoom(z);
+    this.draw();
+  }
+
+  draw(){
+    const { w, h } = this.size();
+    if (!w || !h) return;
+    const zt = Math.max(this.minZoom, Math.min(this.maxZoom, Math.round(this.zoom)));
+    const scale = Math.pow(2, this.zoom - zt);
+    const cx = lonToX(this.center.lon, zt), cy = latToY(this.center.lat, zt);
+    const ox = w / 2 - cx * scale, oy = h / 2 - cy * scale;
+
+    this.layer.style.transform = `translate3d(${ox}px, ${oy}px, 0) scale(${scale})`;
+
+    const n = Math.pow(2, zt);
+    const x0 = Math.floor(-ox / scale / TILE), x1 = Math.ceil((w - ox) / scale / TILE);
+    const y0 = Math.max(0, Math.floor(-oy / scale / TILE)), y1 = Math.min(n, Math.ceil((h - oy) / scale / TILE));
+    const wanted = new Set();
+
+    for (let x = x0; x < x1; x++){
+      for (let y = y0; y < y1; y++){
+        const wrapped = ((x % n) + n) % n;
+        const id = `${zt}/${wrapped}/${y}@${x}`;
+        wanted.add(id);
+        if (this.tiles.has(id)) continue;
+        const img = new Image();
+        img.className = 'pmap-tile';
+        img.decoding = 'async';
+        img.loading = 'eager';
+        img.alt = '';
+        img.style.transform = `translate3d(${x * TILE}px, ${y * TILE}px, 0)`;
+        img.src = `https://tile.openstreetmap.org/${zt}/${wrapped}/${y}.png`;
+        img.addEventListener('load', () => { this.alive = true; }, { once: true });
+        img.addEventListener('error', () => { img.classList.add('dead'); this.dead = (this.dead || 0) + 1; }, { once: true });
+        this.layer.appendChild(img);
+        this.tiles.set(id, img);
+      }
+    }
+    for (const [id, img] of this.tiles){
+      if (!wanted.has(id)){ img.remove(); this.tiles.delete(id); }
+    }
+    this.drawPins();
+    this.onMove?.();
+  }
+
+  drawPins(){
+    const { w, h } = this.size();
+    const html = [];
+    for (const m of this.markers){
+      if (!Number.isFinite(m.lat) || !Number.isFinite(m.lon)) continue;
+      const { x, y } = this.project(m.lat, m.lon);
+      if (x < -60 || y < -60 || x > w + 60 || y > h + 60) continue;
+      html.push(`<button class="pin ${m.starred ? 'star' : ''}" data-act="mapPin" data-key="${esc(m.id)}"
+        style="transform:translate3d(${Math.round(x)}px,${Math.round(y)}px,0)" title="${esc(m.title || '')}">
+        <span class="pin-face">${m.face}</span>
+        <span class="pin-kind">${KIND_GLYPH[m.kind] || KIND_GLYPH.other}</span></button>`);
+    }
+    this.pins.innerHTML = html.join('');
+  }
+}
+
+const KIND_GLYPH = {
+  home:   '<svg viewBox="0 0 24 24"><path d="M4 11.2 12 4.6l8 6.6V20H4z"/></svg>',
+  family: '<svg viewBox="0 0 24 24"><path d="M4 11.2 12 4.6l8 6.6V20H4z"/><path d="M9.6 20v-5.2h4.8V20"/></svg>',
+  work:   '<svg viewBox="0 0 24 24"><rect x="3.5" y="7.5" width="17" height="12" rx="2"/><path d="M9 7.5V5.5h6v2"/></svg>',
+  former: '<svg viewBox="0 0 24 24"><rect x="3.5" y="7.5" width="17" height="12" rx="2"/><path d="M9 7.5V5.5h6v2"/></svg>',
+  school: '<svg viewBox="0 0 24 24"><path d="M12 5 22 9.5 12 14 2 9.5z"/><path d="M6 11.6v4.6c0 1.4 2.7 2.6 6 2.6s6-1.2 6-2.6v-4.6"/></svg>',
+  other:  '<svg viewBox="0 0 24 24"><circle cx="12" cy="10.5" r="3"/><path d="M12 21c4-5.2 6-8.4 6-10.8A6 6 0 0 0 6 10.2C6 12.6 8 15.8 12 21z"/></svg>',
+};
+
+/* ===================================================================== */
 /*                                  AI                                   */
 /* ===================================================================== */
 const API_URL = 'https://api.anthropic.com/v1/messages';
@@ -1021,6 +1489,8 @@ function systemPrompt(cats){
     '- fields: only what the note actually states. Leave a string "" and a list [] when the note says nothing. Never guess, never carry information over from one person to another.',
     '  birthday: normalise to YYYY-MM-DD, or MM-DD when the year is unknown; keep any extra wording out of it.',
     '  current_work / former_work: "Role at Company" or just the company. Move a job to former_work when the note says they left it.',
+    '  schools: universities and schools they attended, by name.',
+    '  residence / family_home / current_work / former_work / schools go on a map, so keep a town or city in them when the note gives one — "Deloitte, Warsaw" rather than "Deloitte".',
     '  relationships: family members and partners, e.g. "sister Maja", "wife Ola".',
     '- facts: everything else worth remembering, one short sentence each, in the language the user used. Write them as standalone statements — the user will read them months from now. Do not repeat something already captured in fields.',
     '- photo_indexes: indexes of the attached photos that show or belong to this person, based on what the note says about them. Use [] when unsure.',
@@ -1259,12 +1729,14 @@ const ICON_MIC = '<rect x="9" y="2.6" width="6" height="11.2" rx="3"/><path d="M
 const TAB_ICONS = {
   capture: '<svg viewBox="0 0 24 24">' + ICON_MIC + '</svg>',
   people:  '<svg viewBox="0 0 24 24"><circle cx="9.2" cy="8.4" r="3.5"/><path d="M2.9 19.9c0-3.5 2.8-5.9 6.3-5.9s6.3 2.4 6.3 5.9"/><circle cx="17.7" cy="6.9" r="2.4"/><path d="M18.4 12.4c1.9.6 3.1 2.2 3.1 4.3"/></svg>',
+  map:     '<svg viewBox="0 0 24 24"><path d="M9 4.2 3.4 6.6v13.2L9 17.4l6 2.4 5.6-2.4V4.2L15 6.6z"/><path d="M9 4.2v13.2M15 6.6v13.2"/></svg>',
   settings:'<svg viewBox="0 0 24 24"><path d="M3.5 7h9.7M18.8 7h1.7M3.5 12h2.9M11.6 12h8.9M3.5 17h8.4M17.1 17h3.4"/><circle cx="16" cy="7" r="2.2"/><circle cx="9" cy="12" r="2.2"/><circle cx="14.5" cy="17" r="2.2"/></svg>',
 };
 function renderTabs(){
   const cur = route().name;
-  const on = { capture: 'capture', people: 'people', person: 'people', edit: 'people', review: 'capture', settings: 'settings' }[cur] || 'capture';
-  $('#tabs').innerHTML = ['capture', 'people', 'settings'].map(k =>
+  const on = { capture: 'capture', people: 'people', person: 'people', edit: 'people',
+               review: 'capture', map: 'map', settings: 'settings' }[cur] || 'capture';
+  $('#tabs').innerHTML = ['capture', 'people', 'map', 'settings'].map(k =>
     `<button class="tab ${k === on ? 'on' : ''}" data-go="#/${k}">${TAB_ICONS[k]}<span>${esc(t('tab.' + k))}</span></button>`
   ).join('');
 }
@@ -1288,7 +1760,9 @@ async function render(){
   if (!$('#app').classList.contains('on')) return;
   const r = route();
   renderTabs();
+  if (state.map && r.name !== 'map'){ state.map.destroy(); state.map = null; state.picking = null; }
   const view = $('#view');
+  view.classList.toggle('map-view', r.name === 'map');
   view.scrollTop = 0;
   window.scrollTo(0, 0);
   try {
@@ -1297,6 +1771,7 @@ async function render(){
     else if (r.name === 'edit') await viewEdit(view, r.arg);
     else if (r.name === 'settings') await viewSettings(view);
     else if (r.name === 'review') await viewReview(view);
+    else if (r.name === 'map') await viewMap(view, r.arg);
     else await viewCapture(view);
   } catch (err){
     console.error(err);
@@ -1448,6 +1923,134 @@ function toggleMic(){
   catch { toast(t('c.error')); }
 }
 
+/* ================================= map ================================ */
+/* Everyone's addresses on one canvas. The chip row is the "map per group"
+   the same way the People tab filters: All / crowned / one category. */
+async function collectPins(scope){
+  const kinds = state.settings.mapKinds || PLACE_KINDS;
+  const people = state.people.filter(p => {
+    if (scope.personId) return p.id === scope.personId;
+    if (scope.group === 'fav') return !!p.starred;
+    if (scope.group && scope.group !== 'all') return p.category === scope.group;
+    return true;
+  });
+
+  const out = [], missing = [];
+  for (const p of people){
+    for (const place of placesOf(p)){
+      if (!kinds.includes(place.kind)) continue;
+      const pinned = (p.pins || {})[place.key];
+      const query = geoQuery(place, p);
+      const hit = pinned || await geoLookup(query);
+      const rec = { id: p.id + '|' + place.key, personId: p.id, key: place.key,
+                    kind: place.kind, label: place.label, query,
+                    starred: !!p.starred, title: p.name + ' — ' + place.label,
+                    manual: !!pinned };
+      if (hit){ out.push({ ...rec, lat: hit.lat, lon: hit.lon }); }
+      else missing.push(rec);
+    }
+  }
+  return { pins: out, missing, people };
+}
+
+function pinFace(p){
+  const rec = photoRecCache.get(p.avatarId);
+  if (rec) return `<img src="${photoURL(rec)}" alt="">`;
+  const initials = (p.name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+  return `<span>${esc(initials || '?')}</span>`;
+}
+
+async function viewMap(view, personId){
+  const person = personId ? state.people.find(p => p.id === personId) : null;
+  if (personId && !person){ go('#/map'); return; }
+  const scope = { personId: person ? person.id : '', group: person ? 'all' : (state.mapGroup || 'all') };
+
+  topbar({
+    title: person ? t('map.person', { name: person.name }) : t('map.title'),
+    left: person ? backBtn('#/person/' + person.id) : '',
+    right: `<button class="tb-btn plain" data-act="mapFilter" aria-label="${esc(t('map.filter'))}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3.5 6.5h17M6.5 12h11M10 17.5h4"/></svg></button>
+      <button class="tb-btn plain" data-act="mapFit" aria-label="${esc(t('map.recenter'))}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 8.5V4h4.5M15.5 4H20v4.5M20 15.5V20h-4.5M8.5 20H4v-4.5"/></svg></button>`,
+  });
+
+  const used = new Set(state.people.map(p => p.category));
+  const groups = person ? [] : ['all', ...(state.people.some(p => p.starred) ? ['fav'] : []), ...allCats().filter(c => used.has(c))];
+
+  view.classList.add('map-view');
+  view.innerHTML = `
+    ${groups.length ? `<div class="chips" id="mapChips">${groups.map(c =>
+      `<button class="chip ${scope.group === c ? 'on' : ''}" data-act="mapGroup" data-cat="${esc(c)}">
+        ${c === 'fav' ? CROWN(13) + ' ' : ''}${esc(c === 'all' ? t('ppl.all') : c === 'fav' ? t('map.fav') : catLabel(c))}</button>`).join('')}</div>` : ''}
+    <div class="pmap-wrap"><div id="pmap"></div>
+      <div class="pmap-zoom">
+        <button class="pmap-btn" data-act="mapZoom" data-d="1" aria-label="+">+</button>
+        <button class="pmap-btn" data-act="mapZoom" data-d="-1" aria-label="−">−</button>
+      </div>
+      <div class="pmap-banner" id="mapBanner"></div>
+    </div>
+    <div id="mapFoot"></div>
+  `;
+
+  const el = $('#pmap');
+  const saved = state.mapView;
+  state.map = new Palamap(el, { center: saved?.center, zoom: saved?.zoom });
+  state.map.onMove = () => { state.mapView = { center: { ...state.map.center }, zoom: state.map.zoom }; };
+  await paintMap(scope);
+}
+
+async function paintMap(scope){
+  state.mapScope = scope;
+  const { pins, missing, people } = await collectPins(scope);
+  if (!state.map) return;
+  state.map.setMarkers(pins.map(p => ({ ...p, face: pinFace(state.people.find(x => x.id === p.personId) || {}) })));
+  if (!state.mapView || state.mapFitPending !== JSON.stringify(scope)){
+    state.map.fit(pins);
+    state.mapFitPending = JSON.stringify(scope);
+  }
+
+  const foot = $('#mapFoot');
+  if (foot){
+    const unresolved = missing.slice(0, 8);
+    foot.innerHTML = `
+      <div class="hint" style="margin:10px 2px 0">${
+        pins.length ? esc(t('map.count', { places: pins.length, people: new Set(pins.map(p => p.personId)).size }))
+                    : esc(t('map.noPlaces')).replace(/\n/g, '<br>')}</div>
+      ${unresolved.length ? `<div class="sec">${esc(t('map.unresolved', { list: '' })).replace(/:\s*$/, '')}</div>
+        <div class="card flush">${unresolved.map(m => {
+          const p = state.people.find(x => x.id === m.personId);
+          return `<button class="mini" data-act="pinByHand" data-key="${esc(m.id)}">
+            <span class="kindchip">${KIND_GLYPH[m.kind] || KIND_GLYPH.other}</span>
+            <span class="nm">${esc(m.label)}<span class="sub">${esc(p ? p.name : '')}</span></span>
+            <span class="when">${esc(t('map.setOnMap'))}</span></button>`;
+        }).join('')}</div>` : ''}`;
+  }
+  const banner = $('#mapBanner');
+  if (banner && !state.picking){
+    const offline = (state.map.dead || 0) > 2 && !state.map.alive;
+    const msg = geoPending ? t('map.locating', { n: geoPending }) : offline ? t('map.offline') : '';
+    banner.textContent = msg;
+    banner.classList.toggle('on', !!msg);
+  }
+
+  /* look up whatever is still unplaced, refreshing as answers land */
+  if (missing.length){
+    const todo = missing.filter(m => !geoMem.has(normQuery(m.query)));
+    for (const m of todo){
+      geoResolve(m.query).then(() => {
+        if (state.mapScope === scope) paintMap(scope);
+      });
+    }
+    if (banner && geoPending){ banner.textContent = t('map.locating', { n: geoPending }); banner.classList.add('on'); }
+  }
+}
+
+function CROWN(size = 18, on = false){
+  return `<svg class="crown ${on ? 'on' : ''}" width="${size}" height="${size}" viewBox="0 0 24 24"
+    fill="${on ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+    <path d="M3.6 8.4 8 11.6 12 5.2l4 6.4 4.4-3.2-1.5 9.2H5.1z"/><path d="M5.6 20.4h12.8"/></svg>`;
+}
+
 /* ------------------------------- review ------------------------------ */
 async function viewReview(view){
   if (!state.review) state.review = await DB.get('meta', 'review');
@@ -1523,13 +2126,14 @@ async function viewPeople(view){
   });
 
   const used = new Set(state.people.map(p => p.category));
-  const cats = ['all', ...allCats().filter(c => used.has(c))];
+  const cats = ['all', ...(state.people.some(p => p.starred) ? ['fav'] : []), ...allCats().filter(c => used.has(c))];
   if (state.filter !== 'all' && !cats.includes(state.filter)) state.filter = 'all';
 
   view.innerHTML = `
     <input type="search" id="q" placeholder="${esc(t('ppl.search'))}" value="${esc(state.query)}" autocomplete="off">
     <div class="chips" style="margin-top:12px" id="chips">
-      ${cats.map(c => `<button class="chip ${state.filter === c ? 'on' : ''}" data-act="filter" data-cat="${esc(c)}">${esc(c === 'all' ? t('ppl.all') : catLabel(c))}</button>`).join('')}
+      ${cats.map(c => `<button class="chip ${state.filter === c ? 'on' : ''}" data-act="filter" data-cat="${esc(c)}">${
+        c === 'fav' ? CROWN(13) + ' ' + esc(t('ppl.fav')) : esc(c === 'all' ? t('ppl.all') : catLabel(c))}</button>`).join('')}
     </div>
     <div id="pcount" class="hint" style="margin:2px 0 4px"></div>
     <div class="plist" id="plist"></div>
@@ -1550,18 +2154,22 @@ async function paintPeopleList(){
   const box = $('#plist');
   if (!box) return;
   const q = state.query.trim().toLowerCase();
-  const inFilter = p => state.filter === 'all' || p.category === state.filter;
+  const inFilter = p => state.filter === 'all' ? true
+                      : state.filter === 'fav' ? !!p.starred
+                      : p.category === state.filter;
   const hay = p => [p.name, ...(p.aka || []), catLabel(p.category),
       ...FIELDS.map(f => Array.isArray(p[f.k]) ? p[f.k].join(' ') : p[f.k]),
       ...(p.facts || []).map(f => f.text)].join(' ').toLowerCase();
-  const list = state.people.filter(p => inFilter(p) && (!q || hay(p).includes(q)));
+  /* crowned people float to the top of every list */
+  const list = state.people.filter(p => inFilter(p) && (!q || hay(p).includes(q)))
+    .sort((a, b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0));
   const flip = document.documentElement.dir === 'rtl' ? 'transform:scaleX(-1)' : '';
 
   const rows = await Promise.all(list.map(async p => {
     const bits = [catLabel(p.category), (p.currentWork || [])[0], p.residence].filter(Boolean);
     return `<button class="prow" data-go="#/person/${p.id}">
       ${await avatarHTML(p)}
-      <span class="col"><span class="nm">${esc(p.name)}</span><span class="sub">${esc(bits.join(' · '))}</span></span>
+      <span class="col"><span class="nm">${esc(p.name)}${p.starred ? ' <span class="crown-mini">' + CROWN(14, true) + '</span>' : ''}</span><span class="sub">${esc(bits.join(' · '))}</span></span>
       <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="${flip}"><path d="M9 5l7 7-7 7"/></svg>
     </button>`;
   }));
@@ -1582,8 +2190,18 @@ async function viewPerson(view, id){
   topbar({
     title: p.name || t('per.new'),
     left: backBtn('#/people'),
-    right: `<button class="tb-btn" data-go="#/edit/${p.id}">${esc(t('per.edit'))}</button>`,
+    right: `<button class="tb-btn plain crown-btn ${p.starred ? 'on' : ''}" data-act="star" data-id="${p.id}"
+        aria-label="${esc(t(p.starred ? 'per.unstar' : 'per.star'))}">${CROWN(21, p.starred)}</button>
+      <button class="tb-btn" data-go="#/edit/${p.id}">${esc(t('per.edit'))}</button>`,
   });
+
+  const places = placesOf(p);
+  let placePins = [];
+  for (const pl of places){
+    const hit = (p.pins || {})[pl.key] || await geoLookup(geoQuery(pl, p));
+    if (hit) placePins.push({ ...pl, lat: hit.lat, lon: hit.lon, id: p.id + '|' + pl.key,
+                              face: pinFace(p), starred: !!p.starred });
+  }
 
   const items = [];
   for (const f of FIELDS){
@@ -1631,6 +2249,22 @@ async function viewPerson(view, id){
     ${items.length ? `<div class="sec">${esc(t('per.details'))}</div>
       <div class="card"><div class="dl">${items.join('')}</div></div>` : ''}
 
+    <div class="sec">${esc(t('per.places'))}</div>
+    <div class="card ${places.length ? 'flush' : ''}">
+      ${placePins.length ? `<button class="pmap-mini" data-go="#/map/${p.id}" aria-label="${esc(t('per.seeMap'))}">
+          <div id="miniMap"></div><span class="pmap-mini-cta">${esc(t('per.seeMap'))}</span></button>` : ''}
+      ${places.length ? places.map(pl => {
+          const hit = placePins.find(x => x.key === pl.key);
+          return `<button class="mini" data-act="placeMenu" data-id="${p.id}" data-key="${esc(pl.key)}">
+            <span class="kindchip">${KIND_GLYPH[pl.kind] || KIND_GLYPH.other}</span>
+            <span class="nm">${esc(pl.label)}<span class="sub">${esc(t('kind.' + pl.kind))}</span></span>
+            ${hit ? '' : `<span class="when">${esc(t('map.setOnMap'))}</span>`}</button>`;
+        }).join('') : `<div class="hint" style="margin:0">${esc(t('per.noPlaces'))}</div>`}
+      <div style="padding:${places.length ? '13px 15px 15px' : '13px 0 0'}">
+        <button class="btn ghost small" data-act="addPlace" data-id="${p.id}" style="width:100%">${esc(t('per.addPlace'))}</button>
+      </div>
+    </div>
+
     <div class="sec">${esc(t('per.photos'))}</div>
     <div class="card">
       ${photos.length ? `<div class="gal" style="margin-bottom:12px">${photos.map(ph =>
@@ -1647,6 +2281,19 @@ async function viewPerson(view, id){
   $('#factIn')?.addEventListener('keydown', e => {
     if (e.key === 'Enter'){ e.preventDefault(); addFact(p.id); }
   });
+
+  if (placePins.length){
+    const mini = new Palamap($('#miniMap'), { interactive: false });
+    mini.setMarkers(placePins);
+    requestAnimationFrame(() => mini.fit(placePins, 34));
+  }
+  /* anything without coordinates gets looked up in the background */
+  for (const pl of places){
+    if (placePins.some(x => x.key === pl.key)) continue;
+    const q = geoQuery(pl, p);
+    if (geoMem.has(normQuery(q))) continue;
+    geoResolve(q).then(hit => { if (hit && route().arg === p.id) render(); });
+  }
 }
 
 async function addFact(id){
@@ -1814,10 +2461,14 @@ async function testKey(){
 /* ------------------------------ backup ------------------------------- */
 async function exportData(){
   const photos = await DB.all('photos');
+  const geoKeys = await wrap((await store('geo')).getAllKeys());
+  const geoVals = await DB.all('geo');
   const out = {
-    app: 'palantir', version: 1, exportedAt: nowISO(),
-    settings: { lang: state.settings.lang, model: state.settings.model, categories: state.settings.categories },
+    app: 'palantir', version: 2, exportedAt: nowISO(),
+    settings: { lang: state.settings.lang, model: state.settings.model,
+                categories: state.settings.categories, mapKinds: state.settings.mapKinds },
     people: state.people,
+    geo: geoKeys.map((k, i) => [k, geoVals[i]]),   // so a restore draws the map at once
     photos: [],
   };
   for (const ph of photos){
@@ -1857,6 +2508,8 @@ async function importData(){
   photoRecCache.clear();
   await DB.clear('people'); await DB.clear('photos');
   for (const p of data.people) await DB.put('people', p);
+  geoMem.clear();
+  for (const [k, v] of data.geo || []) { if (k && v) await DB.put('geo', v, k); }
   for (const ph of data.photos || []){
     try {
       await DB.put('photos', { id: ph.id, personId: ph.personId, w: ph.w, h: ph.h,
@@ -1866,6 +2519,7 @@ async function importData(){
   if (data.settings){
     state.settings.categories = data.settings.categories || [];
     state.settings.model = data.settings.model || state.settings.model;
+    state.settings.mapKinds = data.settings.mapKinds || state.settings.mapKinds;
     await saveSettings();
   }
   state.photosOf.clear();
@@ -1879,7 +2533,8 @@ async function wipeAll(){
   for (const u of urlCache.values()) URL.revokeObjectURL(u);
   urlCache.clear();
   photoRecCache.clear();
-  await DB.clear('people'); await DB.clear('photos'); await DB.clear('meta');
+  await DB.clear('people'); await DB.clear('photos'); await DB.clear('meta'); await DB.clear('geo');
+  geoMem.clear();
   state.people = []; state.photosOf.clear(); state.review = null;
   state.draft = { text: '', photos: [] };
   state.settings.pass = await sha('3671');
@@ -1908,6 +2563,95 @@ function confirmSheet(title, body, danger = true){
     $('#modal').onclick = e => { if (e.target.id === 'modal') done(false); };
   });
 }
+/* ---------------------- map sheets & hand-placing --------------------- */
+function mapFilterSheet(){
+  const on = new Set(state.settings.mapKinds || PLACE_KINDS);
+  $('#sheet').innerHTML = `
+    <h2>${esc(t('map.filter'))}</h2>
+    <div class="sec" style="margin-top:0">${esc(t('map.kinds'))}</div>
+    ${PLACE_KINDS.map(k => `<button class="tick" data-act="mapKind" data-kind="${k}">
+      <span class="box ${on.has(k) ? 'on' : ''}">${on.has(k) ? '✓' : ''}</span>
+      <span class="kindchip small">${KIND_GLYPH[k]}</span>
+      <span class="v">${esc(t('kind.' + k))}</span></button>`).join('')}
+    <div style="margin-top:18px"><button class="btn ghost" data-act="closeSheet">${esc(t('c.done'))}</button></div>`;
+  $('#modal').classList.add('on');
+  $('#modal').onclick = e => { if (e.target.id === 'modal') closeSheet(); };
+}
+
+function placeSheet(personId, key){
+  const p = state.people.find(x => x.id === personId);
+  if (!p) return;
+  const place = placesOf(p).find(x => x.key === key);
+  if (!place) return;
+  const pinned = (p.pins || {})[key];
+  const coords = pinned || geoMem.get(normQuery(geoQuery(place, p)));
+  const isExtra = key.startsWith('extra:');
+  $('#sheet').innerHTML = `
+    <h2>${esc(place.label)}</h2>
+    <p style="color:var(--dim);font-size:14px;margin:-6px 0 16px">${esc(p.name)} · ${esc(t('kind.' + place.kind))}</p>
+    <div style="display:grid;gap:10px">
+      ${coords ? `<a class="btn ghost" href="https://www.openstreetmap.org/?mlat=${coords.lat}&mlon=${coords.lon}#map=16/${coords.lat}/${coords.lon}" target="_blank" rel="noopener">${esc(t('map.openIn'))}</a>` : ''}
+      <button class="btn ghost" data-go="#/person/${p.id}" data-act="closeSheet">${esc(t('map.openProfile'))}</button>
+      <button class="btn ghost" data-act="movePin" data-id="${p.id}" data-key="${esc(key)}">${esc(coords ? t('map.movePin') : t('map.setOnMap'))}</button>
+      ${pinned ? `<button class="btn ghost" data-act="clearPin" data-id="${p.id}" data-key="${esc(key)}">${esc(t('map.clearPin'))}</button>` : ''}
+      ${isExtra ? `<button class="btn ghost danger" data-act="delPlace" data-id="${p.id}" data-key="${esc(key)}">${esc(t('c.delete'))}</button>` : ''}
+      <button class="btn ghost" data-act="closeSheet">${esc(t('c.cancel'))}</button>
+    </div>`;
+  $('#modal').classList.add('on');
+  $('#modal').onclick = e => { if (e.target.id === 'modal') closeSheet(); };
+}
+
+function addPlaceSheet(personId){
+  $('#sheet').innerHTML = `
+    <h2>${esc(t('per.addPlace'))}</h2>
+    <div class="field"><label class="lbl">${esc(t('per.placeLabel'))}</label>
+      <input type="text" id="plLabel" placeholder="ul. Floriańska 3, Kraków"></div>
+    <div class="field"><label class="lbl">${esc(t('per.placeKind'))}</label>
+      <select id="plKind">${PLACE_KINDS.map(k => `<option value="${k}" ${k === 'other' ? 'selected' : ''}>${esc(t('kind.' + k))}</option>`).join('')}</select></div>
+    <div style="display:grid;gap:10px;margin-top:18px">
+      <button class="btn primary" id="plSave">${esc(t('c.add'))}</button>
+      <button class="btn ghost" data-act="closeSheet">${esc(t('c.cancel'))}</button>
+    </div>`;
+  $('#modal').classList.add('on');
+  $('#modal').onclick = e => { if (e.target.id === 'modal') closeSheet(); };
+  $('#plSave').onclick = async () => {
+    const label = $('#plLabel').value.trim();
+    if (!label) return;
+    const p = state.people.find(x => x.id === personId);
+    p.places = p.places || [];
+    p.places.push({ id: uid(), label, kind: $('#plKind').value });
+    await savePerson(p);
+    closeSheet();
+    render();
+  };
+}
+
+/* Tap the map to drop a pin where an address could not be found. */
+function startPicking(personId, key){
+  const p = state.people.find(x => x.id === personId);
+  const place = p && placesOf(p).find(x => x.key === key);
+  if (!place) return;
+  if (route().name !== 'map'){ go('#/map/' + personId); setTimeout(() => startPicking(personId, key), 350); return; }
+  state.picking = { personId, key };
+  const banner = $('#mapBanner');
+  if (banner){
+    banner.innerHTML = esc(t('map.tapToSet', { label: place.label })) +
+      ` <button class="banner-x" data-act="cancelPick">${esc(t('c.cancel'))}</button>`;
+    banner.classList.add('on', 'pick');
+  }
+  if (state.map) state.map.onPick = async ({ lat, lon }) => {
+    const person = state.people.find(x => x.id === personId);
+    person.pins = person.pins || {};
+    person.pins[key] = { lat, lon, at: nowISO() };
+    await savePerson(person);
+    state.picking = null;
+    state.map.onPick = null;
+    banner?.classList.remove('on', 'pick');
+    toast(t('map.pinSet'));
+    paintMap(state.mapScope || { personId: '', group: state.mapGroup });
+  };
+}
+
 function photoSheet(personId, photoId){
   const p = state.people.find(x => x.id === personId);
   $('#sheet').innerHTML = `
@@ -1926,7 +2670,8 @@ function photoSheet(personId, photoId){
 /*                            event delegation                           */
 /* ===================================================================== */
 document.addEventListener('click', async e => {
-  const keyBtn = e.target.closest('[data-key]');
+  /* scoped to #pad: the map's pins carry a data-key of their own */
+  const keyBtn = e.target.closest('#pad [data-key]');
   if (keyBtn){ pressKey(keyBtn.dataset.key); return; }
 
   const goEl = e.target.closest('[data-go]');
@@ -2004,6 +2749,85 @@ document.addEventListener('click', async e => {
       state.filter = el.dataset.cat;
       $$('#chips .chip').forEach(c => c.classList.toggle('on', c.dataset.cat === state.filter));
       paintPeopleList();
+      break;
+    }
+
+    /* --- crown --- */
+    case 'star': {
+      const p = state.people.find(x => x.id === id);
+      p.starred = !p.starred;
+      await savePerson(p);
+      if (navigator.vibrate) navigator.vibrate(p.starred ? 18 : 8);
+      render();
+      break;
+    }
+
+    /* --- map --- */
+    case 'mapGroup': {
+      state.mapGroup = el.dataset.cat;
+      $$('#mapChips .chip').forEach(c => c.classList.toggle('on', c.dataset.cat === state.mapGroup));
+      state.mapFitPending = '';
+      paintMap({ personId: state.mapScope?.personId || '', group: state.mapGroup });
+      break;
+    }
+    case 'mapZoom': {
+      if (!state.map) break;
+      const { w, h } = state.map.size();
+      state.map.zoomAround(w / 2, h / 2, +el.dataset.d);
+      state.mapView = { center: state.map.center, zoom: state.map.zoom };
+      break;
+    }
+    case 'mapFit': {
+      if (state.map) state.map.fit();
+      break;
+    }
+    case 'mapFilter': mapFilterSheet(); break;
+    case 'mapKind': {
+      const k = el.dataset.kind;
+      const set = new Set(state.settings.mapKinds || PLACE_KINDS);
+      set.has(k) ? set.delete(k) : set.add(k);
+      state.settings.mapKinds = PLACE_KINDS.filter(x => set.has(x));
+      await saveSettings();
+      mapFilterSheet();
+      if (state.mapScope) paintMap(state.mapScope);
+      break;
+    }
+    case 'mapPin': {
+      const key = el.dataset.key;
+      const [pid, pkey] = key.split('|');
+      placeSheet(pid, pkey);
+      break;
+    }
+    case 'pinByHand': {
+      const [pid, pkey] = el.dataset.key.split('|');
+      startPicking(pid, pkey);
+      break;
+    }
+    case 'placeMenu': placeSheet(id, el.dataset.key); break;
+    case 'movePin': { closeSheet(); startPicking(id, el.dataset.key); break; }
+    case 'clearPin': {
+      const p = state.people.find(x => x.id === id);
+      delete (p.pins || {})[el.dataset.key];
+      await savePerson(p);
+      closeSheet();
+      if (state.mapScope) paintMap(state.mapScope); else render();
+      break;
+    }
+    case 'cancelPick': {
+      state.picking = null;
+      if (state.map) state.map.onPick = null;
+      $('#mapBanner')?.classList.remove('on', 'pick');
+      if (state.mapScope) paintMap(state.mapScope);
+      break;
+    }
+    case 'addPlace': addPlaceSheet(id); break;
+    case 'delPlace': {
+      const p = state.people.find(x => x.id === id);
+      p.places = (p.places || []).filter(x => 'extra:' + x.id !== el.dataset.key);
+      delete (p.pins || {})[el.dataset.key];
+      await savePerson(p);
+      closeSheet();
+      render();
       break;
     }
 

@@ -24,8 +24,18 @@ Everything stays on your phone. There is no account and no server.
   each one to whichever person it belongs to on the review screen. The first photo
   a person gets becomes their portrait.
 - **Profiles.** Name and nicknames, category, birthday, where they live, the family
-  home, current and former jobs, pets, achievements, family and partners, interests,
-  contact, notes — plus a running list of small things you've learned, each dated.
+  home, current and former jobs, where they studied, pets, achievements, family and
+  partners, interests, contact, notes — plus a running list of small things you've
+  learned, each dated.
+- **A crown for the people who matter.** Tap it and it turns gold; they float to the
+  top of every list and get their own filter, on the list and on the map.
+- **Maps.** Every address you've written down — homes, family homes, workplaces,
+  old workplaces, universities — on one map, each pin wearing the person's face.
+  Filter it by group (that's the map for each group), by crown, or by kind of place.
+  Every profile has its own map of just that person. Tap a pin for the place, the
+  person and a link out to full maps. Addresses are looked up once and remembered,
+  so it opens instantly afterwards; anything that can't be found you can place by
+  hand with one tap.
 - **Categories.** Family, friends, college, high school, primary school, business,
   other — and any of your own.
 - **Birthdays.** The home screen shows whose is coming up in the next six weeks and
@@ -52,6 +62,21 @@ and touches nothing else.
 
 Without a key everything else still works: add and edit people by hand, and write
 facts as you learn them.
+
+## The map
+
+There's no mapping library. The tile layer is a few hundred lines that lay out
+OpenStreetMap raster tiles by hand and invert them with a CSS filter so the map
+sits in the app's own dark palette; the pins are ordinary DOM on top. Pan, pinch,
+double-tap and the zoom buttons all work.
+
+Addresses become coordinates through [Nominatim](https://nominatim.openstreetmap.org),
+one lookup at a time with a second between them, as its usage policy asks. Every
+answer is stored, keyed by the address, so each place is looked up exactly once
+ever — and shared between people who live on the same street. Coordinates you set
+by hand always win over a lookup, and they travel in the backup.
+
+Offline the pins still sit where they belong; only the tiles need a connection.
 
 ## Where the data lives
 
