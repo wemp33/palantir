@@ -9,7 +9,11 @@
 <meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- `black` and not `black-translucent`: translucent hands the web view the whole
+     screen but reports a shorter viewport in standalone mode, which strands the
+     tab bar above a band of background. `black` lays the view out below the
+     status bar, where every height measurement agrees. -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Palantir">
 <meta name="format-detection" content="telephone=no">
 <meta name="robots" content="noindex, nofollow">
@@ -69,7 +73,7 @@ h1,h2,h3{margin:0;font-family:var(--serif);font-weight:600;letter-spacing:-.005e
 
 /* ============================ lock screen ============================ */
 #lock{
-  position:fixed;top:0;left:0;right:0;height:var(--vh,100dvh);z-index:60;
+  position:fixed;inset:0;z-index:60;
   display:flex;flex-direction:column;align-items:center;
   padding:calc(var(--safe-t) + 34px) 22px calc(var(--safe-b) + 22px);
   background:
@@ -109,7 +113,7 @@ h1,h2,h3{margin:0;font-family:var(--serif);font-weight:600;letter-spacing:-.005e
    a measured --vh rather than 100% / 100dvh, because Safari resolves those
    against a layout viewport that does not always match what you can see. */
 #app{
-  position:fixed;top:0;left:0;right:0;height:var(--vh,100dvh);
+  position:fixed;inset:0;               /* bottom:0, never a computed height */
   display:none;flex-direction:column;overflow:hidden;
 }
 #app.on{display:flex}
@@ -2161,21 +2165,6 @@ $('#viewer').addEventListener('click', () => {
 window.addEventListener('hashchange', render);
 
 /* ------------------------------- boot -------------------------------- */
-/* Safari's `height:100%` and `100dvh` resolve against a layout viewport that
-   can be taller than the area you can actually see — which leaves the tab bar
-   floating with a band of background beneath it. window.innerHeight is the
-   visible page box, and unlike visualViewport.height it does not collapse when
-   the keyboard opens, so the bar stays put while you type. */
-function syncViewport(){
-  const h = Math.round(window.innerHeight || document.documentElement.clientHeight || 0);
-  if (h) document.documentElement.style.setProperty('--vh', h + 'px');
-}
-syncViewport();
-window.addEventListener('resize', syncViewport);
-window.addEventListener('orientationchange', () => setTimeout(syncViewport, 120));
-window.addEventListener('pageshow', syncViewport);
-if (window.visualViewport) window.visualViewport.addEventListener('resize', syncViewport);
-
 function applyLang(){
   const rtl = state.lang === 'he';
   document.documentElement.lang = state.lang;
