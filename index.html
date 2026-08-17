@@ -139,10 +139,18 @@ main{
   flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
   padding:20px calc(var(--safe-r) + var(--pad-x)) 34px calc(var(--safe-l) + var(--pad-x));
 }
+/* the app is shaped for a phone; on anything wider it keeps that column
+   rather than stretching a text box across a desktop monitor */
+@media (min-width: 620px){
+  main > *{max-width:560px;margin-inline:auto}
+  main.map-view > *{max-width:none}
+  #topbar > .tb-title{max-width:none}
+  #tabs{max-width:560px;margin-inline:auto;width:100%}
+}
 #tabs{
-  flex:none;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;
-  padding:7px calc(var(--safe-r) + 8px) calc(var(--safe-b) + 7px) calc(var(--safe-l) + 8px);
-  border-top:1px solid var(--hair);
+  flex:none;display:grid;grid-template-columns:repeat(4,1fr);gap:2px;
+  padding:6px calc(var(--safe-r) + 6px) max(var(--safe-b), 6px) calc(var(--safe-l) + 6px);
+  border-top:1px solid var(--hair-2);
   background:var(--bar);
 }
 /* The page ground lives on #app, and <body> behind it is painted the tab bar's
@@ -151,10 +159,11 @@ main{
    taller rather than as a stray band. Belt and braces behind inset:0. */
 #tabs.hide{display:none}
 .tab{
-  height:46px;border-radius:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-  color:var(--faint);font-size:10.5px;font-weight:500;letter-spacing:.01em;transition:color .16s;
+  height:42px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  color:var(--faint);font-size:10px;font-weight:500;letter-spacing:0;transition:color .16s;
+  min-width:0;overflow:hidden;white-space:nowrap;
 }
-.tab svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.tab svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .tab.on{color:var(--white)}
 .tab.on svg{filter:drop-shadow(0 0 9px rgba(180,210,255,.45))}
 .tab:active{background:rgba(255,255,255,.07)}
