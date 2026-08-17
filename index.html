@@ -375,6 +375,7 @@ main.map-view{padding:0;overflow:hidden}
 .pmap-tile{position:absolute;top:0;left:0;width:256px;height:256px;transform-origin:0 0;
   pointer-events:none;opacity:0;transition:opacity .22s ease-out;backface-visibility:hidden}
 .pmap-tile.in{opacity:1}
+.pmap-tile:not(.inv){filter:brightness(1.22) saturate(1.1)}
 .pmap-tile.inv{filter:invert(1) hue-rotate(180deg) saturate(.55) brightness(.84) contrast(1.05)}
 .pmap-pins{position:absolute;inset:0;pointer-events:none}
 .pin{
@@ -391,13 +392,15 @@ main.map-view{padding:0;overflow:hidden}
   background:#0B1626;border:1.5px solid rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;
 }
 .pin-kind svg{width:11px;height:11px;fill:none;stroke:#DCE7F5;stroke-width:2.1;stroke-linejoin:round;stroke-linecap:round}
+.pin.cluster{background:#16294A;border-color:rgba(255,255,255,.9)}
+.pin.cluster .pin-face{font-family:var(--sans);font-size:15px;font-weight:650;color:#fff;background:none}
 .pin.star{border-color:var(--gold);box-shadow:0 3px 14px rgba(233,190,92,.4)}
 .pin.star .pin-kind{border-color:var(--gold-dim)}
 .pin:active .pin-face{transform:scale(.9)}
 .pin-face{transition:transform .12s}
 @keyframes pinIn{from{opacity:0}to{opacity:1}}
 .pmap-credit{
-  position:absolute;bottom:4px;inset-inline-start:8px;font-size:9.5px;color:rgba(190,205,225,.5);
+  position:absolute;bottom:5px;inset-inline-end:9px;font-size:9.5px;color:rgba(190,205,225,.5);
   pointer-events:none;letter-spacing:.01em;
 }
 .pmap-zoom{position:absolute;top:10px;inset-inline-end:10px;display:flex;flex-direction:column;gap:6px}
@@ -1557,26 +1560,62 @@ class Palamap {
     this.onMove?.();
   }
 
-  /* pins are created once and then only moved */
+  /* Pins are created once and then only moved. Anything closer together than
+     a pin's own width is collapsed into a count — four places in one city
+     used to stack into an unreadable pile. */
   drawPins(w, h){
+    const vis = [];
     for (const m of this.markers){
       if (!Number.isFinite(m.lat) || !Number.isFinite(m.lon)) continue;
       const { x, y } = this.project(m.lat, m.lon);
-      let el = this.pinEls.get(m.id);
-      const off = x < -70 || y < -70 || x > w + 70 || y > h + 70;
-      if (off){ if (el){ el.remove(); this.pinEls.delete(m.id); } continue; }
+      if (x < -70 || y < -70 || x > w + 70 || y > h + 70) continue;
+      vis.push({ m, x, y });
+    }
+
+    const R = 40, groups = [];
+    for (const v of vis){
+      const near = groups.find(g => Math.hypot(g.x - v.x, g.y - v.y) < R);
+      if (near){
+        near.items.push(v);
+        near.x = near.items.reduce((a, i) => a + i.x, 0) / near.items.length;
+        near.y = near.items.reduce((a, i) => a + i.y, 0) / near.items.length;
+      } else groups.push({ x: v.x, y: v.y, items: [v] });
+    }
+
+    const wanted = new Set();
+    for (const g of groups){
+      const single = g.items.length === 1;
+      const key = single ? g.items[0].m.id : 'cluster:' + g.items.map(i => i.m.id).sort().join(',');
+      wanted.add(key);
+      let el = this.pinEls.get(key);
       if (!el){
         el = document.createElement('button');
-        el.className = 'pin' + (m.starred ? ' star' : '');
-        el.dataset.act = 'mapPin';
-        el.dataset.pinid = m.id;
-        el.title = m.title || '';
-        el.innerHTML = `<span class="pin-face">${m.face}</span>
-          <span class="pin-kind">${KIND_GLYPH[m.kind] || KIND_GLYPH.other}</span>`;
+        if (single){
+          const m = g.items[0].m;
+          el.className = 'pin' + (m.starred ? ' star' : '');
+          el.dataset.act = 'mapPin';
+          el.dataset.pinid = m.id;
+          el.title = m.title || '';
+          el.innerHTML = `<span class="pin-face">${m.face}</span>
+            <span class="pin-kind">${KIND_GLYPH[m.kind] || KIND_GLYPH.other}</span>`;
+        } else {
+          const anyStar = g.items.some(i => i.m.starred);
+          el.className = 'pin cluster' + (anyStar ? ' star' : '');
+          el.dataset.act = 'mapCluster';
+          /* opening a cluster frames what is inside it, rather than zooming
+             blindly and leaving you looking at empty sea */
+          const la = g.items.map(i => i.m.lat), lo = g.items.map(i => i.m.lon);
+          el.dataset.bbox = [Math.min(...la), Math.min(...lo), Math.max(...la), Math.max(...lo)].join(',');
+          el.title = g.items.map(i => i.m.title).join(', ');
+          el.innerHTML = `<span class="pin-face">${g.items.length}</span>`;
+        }
         this.pins.appendChild(el);
-        this.pinEls.set(m.id, el);
+        this.pinEls.set(key, el);
       }
-      el.style.transform = `translate3d(${Math.round(x)}px,${Math.round(y)}px,0)`;
+      el.style.transform = `translate3d(${Math.round(g.x)}px,${Math.round(g.y)}px,0)`;
+    }
+    for (const [key, el] of this.pinEls){
+      if (!wanted.has(key)){ el.remove(); this.pinEls.delete(key); }
     }
   }
 }
@@ -3005,6 +3044,13 @@ document.addEventListener('click', async e => {
       await saveSettings();
       mapFilterSheet();
       if (state.mapScope) paintMap(state.mapScope);
+      break;
+    }
+    case 'mapCluster': {
+      if (!state.map) break;
+      const [a, b, c, d] = el.dataset.bbox.split(',').map(Number);
+      state.map.fit(a === c && b === d ? [{ lat: a, lon: b }]
+                                      : [{ lat: a, lon: b }, { lat: c, lon: d }], 90);
       break;
     }
     case 'mapPin': {
