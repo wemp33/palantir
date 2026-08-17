@@ -442,6 +442,14 @@ main.map-view{padding:0;overflow:hidden}
 .chip .crown{vertical-align:-2px;margin-inline-end:2px}
 .chip.on .crown{color:var(--gold-dim);fill:var(--gold-dim)}
 
+/* only ever visible when the bar genuinely is not on the bottom edge */
+#seal{
+  position:fixed;left:0;right:0;bottom:0;z-index:75;background:var(--bar);
+  border-top:1px dashed rgba(233,190,92,.5);color:var(--gold);
+  font:400 10px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;
+  display:flex;align-items:center;justify-content:center;text-align:center;padding:0 8px;
+  -webkit-user-select:text;user-select:text;
+}
 .diag{
   margin:0;font:400 11px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;
   color:var(--faint);white-space:pre-wrap;word-break:break-word;-webkit-user-select:text;user-select:text;
@@ -1926,8 +1934,30 @@ async function render(){
   }
   view.scrollTop = scrollMem.get(location.hash) || 0;
   state.lastHash = location.hash;
+  checkSeal();
 }
 const scrollMem = new Map();
+
+/* If the tab bar is not sitting on the bottom edge, say so on screen with the
+   numbers rather than leaving it to be described. Nobody sees this unless the
+   gap is real; when it is, one screenshot carries the whole diagnosis. */
+function checkSeal(){
+  const bar = $('#tabs');
+  if (!bar || !$('#app').classList.contains('on')) return;
+  const r = bar.getBoundingClientRect();
+  const gap = Math.round(window.innerHeight - r.bottom);
+  let strip = $('#seal');
+  if (gap <= 1){ strip?.remove(); return; }
+  if (!strip){
+    strip = document.createElement('div');
+    strip.id = 'seal';
+    document.body.appendChild(strip);
+  }
+  strip.style.height = gap + 'px';
+  strip.textContent = `gap ${gap}px · vh ${window.innerHeight} · bar ${Math.round(r.top)}–${Math.round(r.bottom)}` +
+    ` · app ${Math.round($('#app').getBoundingClientRect().bottom)} · dpr ${devicePixelRatio}`;
+}
+window.addEventListener('resize', () => { checkSeal(); });
 
 /* ------------------------------ capture ------------------------------ */
 async function viewCapture(view){
