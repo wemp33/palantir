@@ -1,0 +1,2121 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Palantir</title>
+<meta name="description" content="Everything you know about the people you know.">
+<meta name="theme-color" content="#0B1626">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Palantir">
+<meta name="format-detection" content="telephone=no">
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/icon-180.png">
+<link rel="icon" href="./icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="./icons/favicon-64.png" sizes="64x64" type="image/png">
+<style>
+/* ============================ palette & base ============================ */
+:root{
+  --bg:#080F1A;
+  --bg-2:#0B1626;
+  --surface:#0F1D31;
+  --card:#101F35;
+  --card-hi:#16294A;
+  --line:rgba(255,255,255,.09);
+  --line-2:rgba(255,255,255,.16);
+  --fg:#EDF2F9;
+  --dim:#9AAAC1;
+  --faint:#63738C;
+  --white:#fff;
+  --danger:#FF8A80;
+  --r:16px;
+  --r-sm:11px;
+  --tap:44px;
+  --sans:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --serif:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua','Times New Roman',Georgia,serif;
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-l:env(safe-area-inset-left,0px);
+  --safe-r:env(safe-area-inset-right,0px);
+  --tabs-h:58px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--bg)}
+body{
+  margin:0;background:var(--bg);color:var(--fg);
+  font:400 16px/1.45 var(--sans);
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:none;
+  -webkit-tap-highlight-color:transparent;
+  min-height:100dvh;
+}
+button,input,textarea,select{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;cursor:pointer;-webkit-appearance:none}
+input,textarea,select{-webkit-appearance:none;appearance:none}
+a{color:inherit}
+h1,h2,h3{margin:0;font-family:var(--serif);font-weight:600;letter-spacing:.01em}
+::selection{background:rgba(255,255,255,.22)}
+.u-sel{-webkit-user-select:text;user-select:text}
+.chrome{-webkit-user-select:none;user-select:none}
+
+/* ============================ lock screen ============================ */
+#lock{
+  position:fixed;inset:0;z-index:60;background:var(--bg-2);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:calc(var(--safe-t) + 24px) 20px calc(var(--safe-b) + 26px);
+  gap:22px;
+}
+#lock.hide{display:none}
+.mark{display:block}
+.mark path,.mark circle{transition:opacity .2s}
+.lock-name{font-family:var(--serif);font-size:27px;letter-spacing:.06em;text-transform:uppercase}
+.lock-sub{color:var(--faint);font-size:13.5px;margin-top:-14px;letter-spacing:.02em}
+.dots{display:flex;gap:15px;margin:6px 0 2px}
+.dot{width:13px;height:13px;border-radius:50%;border:1.5px solid var(--line-2);transition:background .15s,transform .15s,border-color .15s}
+.dot.on{background:var(--white);border-color:var(--white);transform:scale(1.08)}
+#lock.err .dots{animation:shake .4s}
+@keyframes shake{10%,90%{transform:translateX(-5px)}30%,70%{transform:translateX(6px)}50%{transform:translateX(-4px)}}
+.lock-msg{min-height:20px;font-size:13.5px;color:var(--danger)}
+.pad{display:grid;grid-template-columns:repeat(3,78px);gap:16px 22px;justify-content:center}
+.key{
+  height:78px;border-radius:50%;border:1px solid var(--line);
+  background:rgba(255,255,255,.035);
+  font-size:29px;font-weight:300;font-variant-numeric:tabular-nums;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .12s,transform .08s;
+}
+.key:active{background:rgba(255,255,255,.15);transform:scale(.95)}
+.key.blank{border:0;background:none;pointer-events:none}
+.key.fn{font-size:15px;border-color:transparent;background:none;color:var(--dim)}
+
+/* ============================ app frame ============================ */
+#app{display:none;flex-direction:column;min-height:100dvh}
+#app.on{display:flex}
+#topbar{
+  position:sticky;top:0;z-index:30;
+  padding:calc(var(--safe-t) + 10px) calc(var(--safe-r) + 16px) 10px calc(var(--safe-l) + 16px);
+  background:rgba(8,15,26,.82);backdrop-filter:saturate(160%) blur(14px);-webkit-backdrop-filter:saturate(160%) blur(14px);
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:12px;min-height:52px;
+}
+.tb-title{font-family:var(--serif);font-size:20px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tb-btn{
+  min-width:var(--tap);height:36px;padding:0 12px;border-radius:10px;border:1px solid var(--line);
+  color:var(--fg);font-size:14.5px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  background:rgba(255,255,255,.05);white-space:nowrap;
+}
+.tb-btn:active{background:rgba(255,255,255,.14)}
+.tb-btn.plain{border-color:transparent;background:none;padding:0 6px;min-width:34px}
+.tb-btn.strong{background:var(--white);color:#0B1626;border-color:var(--white);font-weight:600}
+.tb-btn[disabled]{opacity:.4}
+main{
+  flex:1;min-height:0;
+  padding:18px calc(var(--safe-r) + 16px) calc(var(--tabs-h) + var(--safe-b) + 30px) calc(var(--safe-l) + 16px);
+  -webkit-overflow-scrolling:touch;
+}
+#tabs{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  display:grid;grid-template-columns:repeat(3,1fr);
+  padding:6px calc(var(--safe-r) + 8px) calc(var(--safe-b) + 6px) calc(var(--safe-l) + 8px);
+  background:rgba(8,15,26,.9);backdrop-filter:saturate(160%) blur(14px);-webkit-backdrop-filter:saturate(160%) blur(14px);
+  border-top:1px solid var(--line);
+}
+#app:not(.on) ~ #tabs, #tabs.hide{display:none}
+.tab{
+  height:var(--tap);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  color:var(--faint);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
+}
+.tab svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tab.on{color:var(--white)}
+.tab:active{background:rgba(255,255,255,.07)}
+
+/* ============================ building blocks ============================ */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:15px}
+.card + .card{margin-top:12px}
+.sec{margin:26px 0 10px;font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+.sec:first-child{margin-top:2px}
+.btn{
+  min-height:var(--tap);padding:0 18px;border-radius:12px;border:1px solid var(--line-2);
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;font-size:15.5px;
+  background:rgba(255,255,255,.05);width:100%;
+}
+.btn:active{background:rgba(255,255,255,.14)}
+.btn.primary{background:var(--white);color:#0B1626;border-color:var(--white);font-weight:600}
+.btn.primary:active{background:#D8E2EF}
+.btn.ghost{background:none}
+.btn.danger{color:var(--danger);border-color:rgba(255,138,128,.4)}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btn.small{min-height:36px;font-size:14px;padding:0 13px;width:auto;border-radius:10px}
+.row{display:flex;gap:10px}
+.row > *{flex:1}
+input[type=text],input[type=password],input[type=search],textarea,select{
+  width:100%;background:rgba(255,255,255,.05);border:1px solid var(--line);
+  border-radius:var(--r-sm);padding:11px 13px;font-size:16px;color:var(--fg);
+  min-height:var(--tap);line-height:1.4;
+}
+textarea{resize:vertical;min-height:96px}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--line-2);background:rgba(255,255,255,.08)}
+input::placeholder,textarea::placeholder{color:var(--faint)}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--dim) 50%),linear-gradient(135deg,var(--dim) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-inline-end:34px}
+[dir=rtl] select{background-position:18px 50%,13px 50%}
+.lbl{display:block;font-size:12.5px;color:var(--dim);margin:0 0 6px 2px;letter-spacing:.02em}
+.field + .field{margin-top:13px}
+.hint{font-size:12.5px;color:var(--faint);line-height:1.5;margin-top:7px}
+.empty{text-align:center;color:var(--faint);padding:46px 20px;font-size:14.5px;line-height:1.6}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;height:29px;padding:0 11px;border-radius:999px;
+  border:1px solid var(--line);background:rgba(255,255,255,.05);font-size:12.5px;color:var(--dim);white-space:nowrap;
+}
+.chip.on{background:var(--white);color:#0B1626;border-color:var(--white);font-weight:600}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.avatar{
+  width:46px;height:46px;border-radius:50%;flex:none;object-fit:cover;background:var(--card-hi);
+  display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:18px;color:var(--dim);
+  border:1px solid var(--line);overflow:hidden;
+}
+img.avatar{display:block}
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tabs-h) + var(--safe-b) + 18px);
+  z-index:70;background:var(--card-hi);border:1px solid var(--line-2);border-radius:12px;
+  padding:11px 17px;font-size:14px;max-width:min(92vw,420px);text-align:center;
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(-4px)}
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.28);border-top-color:currentColor;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ============================ capture ============================ */
+.hero{display:flex;align-items:center;gap:13px;margin-bottom:16px}
+.hero .mark{flex:none}
+.hero h1{font-size:22px;line-height:1.15}
+.hero p{margin:2px 0 0;font-size:13px;color:var(--faint)}
+.capture-box{position:relative}
+.capture-box textarea{min-height:150px;padding-bottom:52px;font-size:16.5px;line-height:1.55}
+.capture-tools{position:absolute;inset-inline:9px;bottom:9px;display:flex;gap:8px;align-items:center}
+.icon-btn{
+  width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:rgba(10,20,35,.85);
+  display:flex;align-items:center;justify-content:center;flex:none;
+}
+.icon-btn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.icon-btn:active{background:rgba(255,255,255,.16)}
+.icon-btn.rec{background:var(--white);color:#0B1626;border-color:var(--white);animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 7px rgba(255,255,255,.12)}}
+.thumbs{display:flex;gap:9px;overflow-x:auto;padding:11px 0 2px;scrollbar-width:none}
+.thumbs::-webkit-scrollbar{display:none}
+.thumb{position:relative;flex:none}
+.thumb img{width:78px;height:78px;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:block}
+.thumb button{
+  position:absolute;top:-6px;inset-inline-end:-6px;width:24px;height:24px;border-radius:50%;
+  background:#0B1626;border:1px solid var(--line-2);color:var(--fg);font-size:14px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+}
+.bday{display:flex;align-items:center;gap:11px;padding:9px 0}
+.bday + .bday{border-top:1px solid var(--line)}
+.bday .when{margin-inline-start:auto;font-size:12.5px;color:var(--dim);text-align:end;white-space:nowrap}
+
+/* ============================ people ============================ */
+.plist{margin-top:4px}
+.prow{
+  display:flex;align-items:center;gap:13px;padding:11px 2px;width:100%;text-align:start;
+  border-bottom:1px solid var(--line);
+}
+.prow:active{background:rgba(255,255,255,.05)}
+.prow .nm{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prow .sub{font-size:12.5px;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.prow .col{min-width:0;flex:1}
+.grp{margin:22px 0 4px;font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+
+/* ============================ person ============================ */
+.phero{display:flex;gap:15px;align-items:center;margin-bottom:6px}
+.phero .avatar{width:76px;height:76px;font-size:28px}
+.phero h1{font-size:24px;line-height:1.2;word-break:break-word}
+.phero .meta{font-size:13px;color:var(--faint);margin-top:4px}
+.dl{margin:0}
+.dl .k{font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--faint);margin-bottom:3px}
+.dl .v{font-size:15.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.dl .item + .item{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.dl ul{margin:0;padding-inline-start:19px}
+.dl li{margin:2px 0}
+.fact{display:flex;gap:11px;padding:11px 0;align-items:flex-start}
+.fact + .fact{border-top:1px solid var(--line)}
+.fact .tx{flex:1;font-size:15px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.fact .dt{font-size:11px;color:var(--faint);margin-top:4px;letter-spacing:.03em}
+.fact .x{color:var(--faint);font-size:19px;line-height:1;padding:2px 5px;flex:none}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:9px}
+.gal img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:block}
+.gal .cell{position:relative}
+.gal .cell.is-av::after{content:'★';position:absolute;top:5px;inset-inline-start:7px;font-size:13px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+
+/* ============================ review ============================ */
+.rv{border:1px solid var(--line);border-radius:var(--r);padding:14px;background:var(--card)}
+.rv + .rv{margin-top:12px}
+.rv.off{opacity:.42}
+.rv-head{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.rv-head input{flex:1;font-family:var(--serif);font-size:17.5px}
+.badge{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-radius:6px;border:1px solid var(--line-2);color:var(--dim);white-space:nowrap}
+.badge.new{background:var(--white);color:#0B1626;border-color:var(--white);font-weight:700}
+.tick{display:flex;gap:10px;align-items:flex-start;padding:8px 0;width:100%;text-align:start}
+.tick + .tick{border-top:1px solid var(--line)}
+.box{
+  width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line-2);flex:none;margin-top:1px;
+  display:flex;align-items:center;justify-content:center;font-size:13px;color:#0B1626;
+}
+.box.on{background:var(--white);border-color:var(--white)}
+.tick .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.tick .v{font-size:14.8px;line-height:1.45;word-break:break-word}
+.tick .old{font-size:12px;color:var(--faint);text-decoration:line-through;margin-top:2px;display:block}
+.tick .old.keep{text-decoration:none}
+.rv-photo{flex:none;width:100px}
+.rv-photo img{width:100px;height:100px;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:block}
+.rv-photo select{margin-top:6px;min-height:34px;padding:5px 8px;font-size:13px}
+
+/* ============================ modal ============================ */
+#modal{position:fixed;inset:0;z-index:80;display:none;align-items:flex-end;justify-content:center;background:rgba(4,8,15,.72)}
+#modal.on{display:flex}
+.sheet{
+  width:100%;max-width:520px;background:var(--bg-2);border:1px solid var(--line);
+  border-radius:20px 20px 0 0;padding:20px 18px calc(var(--safe-b) + 20px);
+  max-height:86dvh;overflow:auto;animation:up .22s ease-out;
+}
+@keyframes up{from{transform:translateY(24px);opacity:.4}}
+.sheet h2{font-size:19px;margin-bottom:13px}
+#viewer{position:fixed;inset:0;z-index:90;background:rgba(4,8,15,.96);display:none;align-items:center;justify-content:center}
+#viewer.on{display:flex}
+#viewer img{max-width:100%;max-height:100dvh;object-fit:contain}
+</style>
+</head>
+<body>
+
+<!-- ================================ lock ================================ -->
+<div id="lock" class="chrome">
+  <svg class="mark" width="76" height="76" viewBox="0 0 100 100" aria-hidden="true">
+    <circle cx="50" cy="36" r="30.25" fill="none" stroke="#fff" stroke-width="11.5"/>
+    <path d="M4.5 78.49 L50 88.5 L95.5 78.49 L95.5 89.99 L50 100 L4.5 89.99 Z" fill="#fff"/>
+  </svg>
+  <div class="lock-name">Palantir</div>
+  <div class="lock-sub" data-i18n="lock.sub"></div>
+  <div class="dots" id="dots"><i class="dot"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i></div>
+  <div class="lock-msg" id="lockMsg"></div>
+  <div class="pad" id="pad"></div>
+</div>
+
+<!-- ================================ app ================================= -->
+<div id="app">
+  <header id="topbar" class="chrome">
+    <div id="tbLeft"></div>
+    <div class="tb-title" id="tbTitle">Palantir</div>
+    <div id="tbRight" style="display:flex;gap:8px"></div>
+  </header>
+  <main id="view"></main>
+</div>
+
+<nav id="tabs" class="chrome hide"></nav>
+<div id="modal"><div class="sheet" id="sheet"></div></div>
+<div id="viewer"><img id="viewerImg" alt=""></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   Palantir — a private memory for the people you know.
+   One file, no build step, no server. Profiles and photos live in
+   IndexedDB on this device. The only network call the app ever makes is
+   the optional one you trigger yourself: sorting a brain-dump with the
+   Claude API, using a key you paste in Settings.
+   ===================================================================== */
+
+/* ------------------------------ helpers ------------------------------ */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const nowISO = () => new Date().toISOString();
+const clean = a => (Array.isArray(a) ? a : []).map(v => String(v ?? '').trim()).filter(Boolean);
+const uniq = a => Array.from(new Set(a.map(v => v.trim()).filter(Boolean)));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function toast(msg, ms = 2400){
+  const t = $('#toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('on'), ms);
+}
+
+/* ------------------------------- i18n -------------------------------- */
+const I18N = {
+  en: {
+    'lock.sub': 'Enter your passcode',
+    'lock.wrong': 'Wrong passcode',
+    'lock.clear': 'Clear',
+    'tab.capture': 'Capture', 'tab.people': 'People', 'tab.settings': 'Settings',
+
+    'greet.morning': 'Good morning', 'greet.afternoon': 'Good afternoon',
+    'greet.evening': 'Good evening', 'greet.night': 'Still up',
+
+    'cap.lede': 'Tell me what you heard today.',
+    'cap.ph': 'Anna said her sister just had a baby, and she starts at Deloitte in October. Tomek got a dog — a beagle called Fistaszek…',
+    'cap.mic': 'Dictate', 'cap.micStop': 'Stop dictating',
+    'cap.photo': 'Add a photo',
+    'cap.sort': 'Sort into profiles',
+    'cap.sorting': 'Reading…',
+    'cap.clear': 'Clear draft',
+    'cap.empty': 'Write or dictate something first.',
+    'cap.noKey': 'Add a Claude API key in Settings to sort automatically — or add people by hand.',
+    'cap.noMic': 'Dictation is not available in this browser.',
+    'cap.upcoming': 'Birthdays coming up',
+    'cap.recent': 'Recently updated',
+    'cap.addManual': 'Add someone by hand',
+
+    'ppl.title': 'People', 'ppl.search': 'Search names, places, anything',
+    'ppl.all': 'Everyone', 'ppl.empty': 'No one here yet.\nStart by writing what you know on the Capture tab.',
+    'ppl.none': 'Nothing matched that search.',
+    'ppl.count': '{n} people', 'ppl.count1': '1 person',
+    'ppl.new': 'New person',
+
+    'per.new': 'New person', 'per.edit': 'Edit', 'per.save': 'Save',
+    'per.delete': 'Delete person', 'per.deleteQ': 'Delete {name} and everything stored about them?',
+    'per.photos': 'Photos', 'per.addPhoto': 'Add photos',
+    'per.setAvatar': 'Use as portrait', 'per.delPhoto': 'Delete photo',
+    'per.viewPhoto': 'View full size',
+    'per.facts': 'What I know', 'per.addFact': 'Add something you learned…',
+    'per.noFacts': 'Nothing written down yet.',
+    'per.details': 'Details', 'per.nameReq': 'A name is required.',
+    'per.added': 'Added {name}.', 'per.saved': 'Saved.',
+
+    'f.name': 'Name', 'f.aka': 'Also known as', 'f.category': 'Category',
+    'f.birthday': 'Birthday', 'f.residence': 'Lives in', 'f.familyHome': 'Family home',
+    'f.currentWork': 'Works at', 'f.formerWork': 'Worked at', 'f.pets': 'Pets',
+    'f.achievements': 'Achievements', 'f.relationships': 'Family & partners',
+    'f.interests': 'Interests', 'f.contact': 'Contact', 'f.notes': 'Notes',
+    'f.multiHint': 'One per line',
+
+    'cat.family': 'Family', 'cat.college': 'College', 'cat.highschool': 'High school',
+    'cat.primary': 'Primary school', 'cat.business': 'Business', 'cat.friends': 'Friends',
+    'cat.other': 'Other',
+
+    'rev.title': 'Review', 'rev.lede': 'Nothing is saved until you tap Apply.',
+    'rev.new': 'New', 'rev.update': 'Update', 'rev.apply': 'Apply',
+    'rev.discard': 'Discard', 'rev.discardQ': 'Throw away these suggestions?',
+    'rev.none': 'Nothing to review.',
+    'rev.facts': 'Facts', 'rev.leftovers': "Didn't fit anyone",
+    'rev.photos': 'Photos', 'rev.applied': 'Saved to {n} profiles.',
+    'rev.replaces': 'replaces', 'rev.already': 'already there:',
+    'rev.photoDrop': "Don't keep this photo",
+
+    'set.title': 'Settings',
+    'set.language': 'Language', 'set.passcode': 'Passcode',
+    'set.changePass': 'Change passcode', 'set.newPass': 'New passcode (4 digits)',
+    'set.repeatPass': 'Repeat it', 'set.passMismatch': "The two didn't match.",
+    'set.passShort': 'Use exactly 4 digits.', 'set.passSaved': 'Passcode changed.',
+    'set.ai': 'AI sorting', 'set.apiKey': 'Claude API key',
+    'set.apiKeyHint': 'Starts with sk-ant-. Stored only on this device, sent only to api.anthropic.com when you tap “Sort into profiles”. Get one at console.anthropic.com.',
+    'set.model': 'Model', 'set.test': 'Test the key',
+    'set.keyOk': 'The key works.', 'set.keyBad': 'The key was rejected: {e}',
+    'set.cats': 'Categories', 'set.addCat': 'Add a category', 'set.catPh': 'e.g. Gym, Neighbours',
+    'set.catUsed': 'In use by {n} — remove them from it first.',
+    'set.data': 'Your data',
+    'set.export': 'Export a backup', 'set.import': 'Restore from a backup',
+    'set.importQ': 'Replace everything on this device with the backup?',
+    'set.imported': 'Restored {n} people.', 'set.badFile': "That file wasn't a Palantir backup.",
+    'set.wipe': 'Erase everything', 'set.wipeQ': 'Erase every profile, photo and setting on this device?',
+    'set.storage': '{people} people · {photos} photos · {size}',
+    'set.about': 'About',
+    'set.aboutText': 'Palantir keeps everything on this phone. There is no account and no server: profiles, photos and notes live in the browser’s own storage. Back up regularly — clearing site data erases it.',
+
+    'c.cancel': 'Cancel', 'c.save': 'Save', 'c.delete': 'Delete', 'c.add': 'Add',
+    'c.done': 'Done', 'c.back': 'Back', 'c.close': 'Close', 'c.ok': 'OK',
+    'c.error': 'Something went wrong', 'c.confirm': 'Are you sure?',
+    'c.today': 'today', 'c.tomorrow': 'tomorrow', 'c.inDays': 'in {n} days',
+    'c.turns': 'turns {n}', 'c.never': 'never',
+  },
+
+  pl: {
+    'lock.sub': 'Wpisz kod',
+    'lock.wrong': 'Zły kod',
+    'lock.clear': 'Wyczyść',
+    'tab.capture': 'Zapis', 'tab.people': 'Ludzie', 'tab.settings': 'Ustawienia',
+
+    'greet.morning': 'Dzień dobry', 'greet.afternoon': 'Dzień dobry',
+    'greet.evening': 'Dobry wieczór', 'greet.night': 'Jeszcze nie śpisz',
+
+    'cap.lede': 'Powiedz, czego się dziś dowiedziałeś.',
+    'cap.ph': 'Ania mówiła, że jej siostra urodziła, a ona od października zaczyna w Deloitte. Tomek ma psa — beagle’a Fistaszka…',
+    'cap.mic': 'Dyktuj', 'cap.micStop': 'Zakończ dyktowanie',
+    'cap.photo': 'Dodaj zdjęcie',
+    'cap.sort': 'Rozpisz do profili',
+    'cap.sorting': 'Czytam…',
+    'cap.clear': 'Wyczyść notatkę',
+    'cap.empty': 'Najpierw coś napisz albo podyktuj.',
+    'cap.noKey': 'Dodaj klucz API Claude w Ustawieniach, żeby sortować automatycznie — albo dopisuj ludzi ręcznie.',
+    'cap.noMic': 'Dyktowanie nie działa w tej przeglądarce.',
+    'cap.upcoming': 'Zbliżające się urodziny',
+    'cap.recent': 'Ostatnio zmienione',
+    'cap.addManual': 'Dodaj osobę ręcznie',
+
+    'ppl.title': 'Ludzie', 'ppl.search': 'Szukaj imion, miejsc, czegokolwiek',
+    'ppl.all': 'Wszyscy', 'ppl.empty': 'Jeszcze nikogo tu nie ma.\nZacznij od zakładki Zapis.',
+    'ppl.none': 'Nic nie pasuje.',
+    'ppl.count': '{n} osób', 'ppl.count1': '1 osoba',
+    'ppl.new': 'Nowa osoba',
+
+    'per.new': 'Nowa osoba', 'per.edit': 'Edytuj', 'per.save': 'Zapisz',
+    'per.delete': 'Usuń osobę', 'per.deleteQ': 'Usunąć {name} i wszystko, co o niej zapisano?',
+    'per.photos': 'Zdjęcia', 'per.addPhoto': 'Dodaj zdjęcia',
+    'per.setAvatar': 'Ustaw jako portret', 'per.delPhoto': 'Usuń zdjęcie',
+    'per.viewPhoto': 'Zobacz w pełnym rozmiarze',
+    'per.facts': 'Co wiem', 'per.addFact': 'Dopisz, czego się dowiedziałeś…',
+    'per.noFacts': 'Jeszcze nic nie zapisano.',
+    'per.details': 'Szczegóły', 'per.nameReq': 'Imię jest wymagane.',
+    'per.added': 'Dodano: {name}.', 'per.saved': 'Zapisano.',
+
+    'f.name': 'Imię i nazwisko', 'f.aka': 'Znany też jako', 'f.category': 'Kategoria',
+    'f.birthday': 'Urodziny', 'f.residence': 'Mieszka w', 'f.familyHome': 'Dom rodzinny',
+    'f.currentWork': 'Pracuje w', 'f.formerWork': 'Pracował w', 'f.pets': 'Zwierzęta',
+    'f.achievements': 'Osiągnięcia', 'f.relationships': 'Rodzina i partnerzy',
+    'f.interests': 'Zainteresowania', 'f.contact': 'Kontakt', 'f.notes': 'Notatki',
+    'f.multiHint': 'Po jednym w wierszu',
+
+    'cat.family': 'Rodzina', 'cat.college': 'Studia', 'cat.highschool': 'Liceum',
+    'cat.primary': 'Podstawówka', 'cat.business': 'Praca', 'cat.friends': 'Znajomi',
+    'cat.other': 'Inne',
+
+    'rev.title': 'Do zatwierdzenia', 'rev.lede': 'Nic nie zapisze się, dopóki nie klikniesz Zatwierdź.',
+    'rev.new': 'Nowa', 'rev.update': 'Zmiana', 'rev.apply': 'Zatwierdź',
+    'rev.discard': 'Odrzuć', 'rev.discardQ': 'Wyrzucić te propozycje?',
+    'rev.none': 'Nie ma czego zatwierdzać.',
+    'rev.facts': 'Fakty', 'rev.leftovers': 'Nie pasowało do nikogo',
+    'rev.photos': 'Zdjęcia', 'rev.applied': 'Zapisano w {n} profilach.',
+    'rev.replaces': 'zastępuje', 'rev.already': 'już jest:',
+    'rev.photoDrop': 'Nie zapisuj tego zdjęcia',
+
+    'set.title': 'Ustawienia',
+    'set.language': 'Język', 'set.passcode': 'Kod dostępu',
+    'set.changePass': 'Zmień kod', 'set.newPass': 'Nowy kod (4 cyfry)',
+    'set.repeatPass': 'Powtórz', 'set.passMismatch': 'Kody się różnią.',
+    'set.passShort': 'Dokładnie 4 cyfry.', 'set.passSaved': 'Kod zmieniony.',
+    'set.ai': 'Sortowanie AI', 'set.apiKey': 'Klucz API Claude',
+    'set.apiKeyHint': 'Zaczyna się od sk-ant-. Zapisany tylko na tym urządzeniu, wysyłany do api.anthropic.com wyłącznie po kliknięciu „Rozpisz do profili”. Klucz zdobędziesz na console.anthropic.com.',
+    'set.model': 'Model', 'set.test': 'Sprawdź klucz',
+    'set.keyOk': 'Klucz działa.', 'set.keyBad': 'Klucz odrzucony: {e}',
+    'set.cats': 'Kategorie', 'set.addCat': 'Dodaj kategorię', 'set.catPh': 'np. Siłownia, Sąsiedzi',
+    'set.catUsed': 'Używa jej {n} — najpierw je przenieś.',
+    'set.data': 'Twoje dane',
+    'set.export': 'Zrób kopię zapasową', 'set.import': 'Wczytaj kopię',
+    'set.importQ': 'Zastąpić wszystko na tym urządzeniu kopią z pliku?',
+    'set.imported': 'Wczytano {n} osób.', 'set.badFile': 'To nie jest kopia Palantira.',
+    'set.wipe': 'Usuń wszystko', 'set.wipeQ': 'Usunąć wszystkie profile, zdjęcia i ustawienia z tego urządzenia?',
+    'set.storage': '{people} osób · {photos} zdjęć · {size}',
+    'set.about': 'O aplikacji',
+    'set.aboutText': 'Palantir trzyma wszystko na tym telefonie. Nie ma konta ani serwera: profile, zdjęcia i notatki leżą w pamięci przeglądarki. Rób kopie zapasowe — wyczyszczenie danych strony kasuje je bezpowrotnie.',
+
+    'c.cancel': 'Anuluj', 'c.save': 'Zapisz', 'c.delete': 'Usuń', 'c.add': 'Dodaj',
+    'c.done': 'Gotowe', 'c.back': 'Wstecz', 'c.close': 'Zamknij', 'c.ok': 'OK',
+    'c.error': 'Coś poszło nie tak', 'c.confirm': 'Na pewno?',
+    'c.today': 'dziś', 'c.tomorrow': 'jutro', 'c.inDays': 'za {n} dni',
+    'c.turns': 'kończy {n}', 'c.never': 'nigdy',
+  },
+
+  he: {
+    'lock.sub': 'הזן את הקוד',
+    'lock.wrong': 'קוד שגוי',
+    'lock.clear': 'נקה',
+    'tab.capture': 'רישום', 'tab.people': 'אנשים', 'tab.settings': 'הגדרות',
+
+    'greet.morning': 'בוקר טוב', 'greet.afternoon': 'צהריים טובים',
+    'greet.evening': 'ערב טוב', 'greet.night': 'עדיין ער',
+
+    'cap.lede': 'ספר מה שמעת היום.',
+    'cap.ph': 'אנה סיפרה שאחותה ילדה, והיא מתחילה לעבוד בדלויט באוקטובר. לתומק יש כלב חדש — ביגל בשם פיסטשק…',
+    'cap.mic': 'הכתבה', 'cap.micStop': 'סיים הכתבה',
+    'cap.photo': 'הוסף תמונה',
+    'cap.sort': 'מיין לפרופילים',
+    'cap.sorting': 'קורא…',
+    'cap.clear': 'נקה טיוטה',
+    'cap.empty': 'כתוב או הכתב משהו קודם.',
+    'cap.noKey': 'הוסף מפתח API של Claude בהגדרות כדי למיין אוטומטית — או הוסף אנשים ידנית.',
+    'cap.noMic': 'הכתבה אינה זמינה בדפדפן הזה.',
+    'cap.upcoming': 'ימי הולדת קרובים',
+    'cap.recent': 'עודכנו לאחרונה',
+    'cap.addManual': 'הוסף אדם ידנית',
+
+    'ppl.title': 'אנשים', 'ppl.search': 'חפש שמות, מקומות, כל דבר',
+    'ppl.all': 'כולם', 'ppl.empty': 'עדיין אין כאן אף אחד.\nהתחל בלשונית הרישום.',
+    'ppl.none': 'לא נמצאו תוצאות.',
+    'ppl.count': '{n} אנשים', 'ppl.count1': 'אדם אחד',
+    'ppl.new': 'אדם חדש',
+
+    'per.new': 'אדם חדש', 'per.edit': 'עריכה', 'per.save': 'שמור',
+    'per.delete': 'מחק אדם', 'per.deleteQ': 'למחוק את {name} ואת כל מה שנשמר עליו?',
+    'per.photos': 'תמונות', 'per.addPhoto': 'הוסף תמונות',
+    'per.setAvatar': 'הגדר כתמונת פרופיל', 'per.delPhoto': 'מחק תמונה',
+    'per.viewPhoto': 'הצג בגודל מלא',
+    'per.facts': 'מה אני יודע', 'per.addFact': 'הוסף משהו שלמדת…',
+    'per.noFacts': 'עדיין לא נרשם דבר.',
+    'per.details': 'פרטים', 'per.nameReq': 'חובה להזין שם.',
+    'per.added': '{name} נוסף.', 'per.saved': 'נשמר.',
+
+    'f.name': 'שם', 'f.aka': 'ידוע גם כ', 'f.category': 'קטגוריה',
+    'f.birthday': 'יום הולדת', 'f.residence': 'גר ב', 'f.familyHome': 'בית ההורים',
+    'f.currentWork': 'עובד ב', 'f.formerWork': 'עבד ב', 'f.pets': 'חיות מחמד',
+    'f.achievements': 'הישגים', 'f.relationships': 'משפחה ובני זוג',
+    'f.interests': 'תחומי עניין', 'f.contact': 'יצירת קשר', 'f.notes': 'הערות',
+    'f.multiHint': 'אחד בכל שורה',
+
+    'cat.family': 'משפחה', 'cat.college': 'אוניברסיטה', 'cat.highschool': 'תיכון',
+    'cat.primary': 'בית ספר יסודי', 'cat.business': 'עסקים', 'cat.friends': 'חברים',
+    'cat.other': 'אחר',
+
+    'rev.title': 'אישור', 'rev.lede': 'שום דבר לא נשמר עד שתלחץ על החל.',
+    'rev.new': 'חדש', 'rev.update': 'עדכון', 'rev.apply': 'החל',
+    'rev.discard': 'בטל', 'rev.discardQ': 'לזרוק את ההצעות האלה?',
+    'rev.none': 'אין מה לאשר.',
+    'rev.facts': 'עובדות', 'rev.leftovers': 'לא התאים לאף אחד',
+    'rev.photos': 'תמונות', 'rev.applied': 'נשמר ב-{n} פרופילים.',
+    'rev.replaces': 'מחליף את', 'rev.already': 'כבר קיים:',
+    'rev.photoDrop': 'אל תשמור את התמונה הזו',
+
+    'set.title': 'הגדרות',
+    'set.language': 'שפה', 'set.passcode': 'קוד גישה',
+    'set.changePass': 'שנה קוד', 'set.newPass': 'קוד חדש (4 ספרות)',
+    'set.repeatPass': 'הזן שוב', 'set.passMismatch': 'הקודים אינם תואמים.',
+    'set.passShort': 'בדיוק 4 ספרות.', 'set.passSaved': 'הקוד שונה.',
+    'set.ai': 'מיון בעזרת AI', 'set.apiKey': 'מפתח API של Claude',
+    'set.apiKeyHint': 'מתחיל ב-sk-ant-. נשמר רק במכשיר הזה, ונשלח ל-api.anthropic.com רק כשתלחץ על „מיין לפרופילים”. מפתח מקבלים ב-console.anthropic.com.',
+    'set.model': 'מודל', 'set.test': 'בדוק את המפתח',
+    'set.keyOk': 'המפתח עובד.', 'set.keyBad': 'המפתח נדחה: {e}',
+    'set.cats': 'קטגוריות', 'set.addCat': 'הוסף קטגוריה', 'set.catPh': 'למשל חדר כושר, שכנים',
+    'set.catUsed': '{n} משתמשים בה — העבר אותם קודם.',
+    'set.data': 'הנתונים שלך',
+    'set.export': 'ייצא גיבוי', 'set.import': 'שחזר מגיבוי',
+    'set.importQ': 'להחליף את כל מה שבמכשיר בגיבוי?',
+    'set.imported': 'שוחזרו {n} אנשים.', 'set.badFile': 'הקובץ אינו גיבוי של Palantir.',
+    'set.wipe': 'מחק הכול', 'set.wipeQ': 'למחוק כל פרופיל, תמונה והגדרה מהמכשיר הזה?',
+    'set.storage': '{people} אנשים · {photos} תמונות · {size}',
+    'set.about': 'אודות',
+    'set.aboutText': 'Palantir שומר הכול על הטלפון הזה. אין חשבון ואין שרת: הפרופילים, התמונות וההערות יושבים באחסון של הדפדפן. גבה באופן קבוע — ניקוי נתוני האתר מוחק אותם.',
+
+    'c.cancel': 'ביטול', 'c.save': 'שמור', 'c.delete': 'מחק', 'c.add': 'הוסף',
+    'c.done': 'סיום', 'c.back': 'חזרה', 'c.close': 'סגור', 'c.ok': 'אישור',
+    'c.error': 'משהו השתבש', 'c.confirm': 'בטוח?',
+    'c.today': 'היום', 'c.tomorrow': 'מחר', 'c.inDays': 'בעוד {n} ימים',
+    'c.turns': 'חוגג {n}', 'c.never': 'אף פעם',
+  },
+};
+const LANGS = [['en', 'English'], ['pl', 'Polski'], ['he', 'עברית']];
+const SPEECH_LOCALE = { en: 'en-US', pl: 'pl-PL', he: 'he-IL' };
+
+function t(key, vars){
+  const table = I18N[state.lang] || I18N.en;
+  let s = table[key] ?? I18N.en[key] ?? key;
+  if (vars) for (const k in vars) s = s.replaceAll('{' + k + '}', vars[k]);
+  return s;
+}
+
+/* ---------------------------- data model ----------------------------- */
+const DEFAULT_CATS = ['family', 'friends', 'college', 'highschool', 'primary', 'business', 'other'];
+const MODELS = [
+  ['claude-opus-5', 'Claude Opus 5'],
+  ['claude-sonnet-5', 'Claude Sonnet 5'],
+  ['claude-haiku-4-5', 'Claude Haiku 4.5'],
+];
+const DEFAULT_MODEL = 'claude-opus-5';
+/* Haiku 4.5 rejects the effort parameter; the 5-series models take it. */
+const takesEffort = m => m === 'claude-opus-5' || m === 'claude-sonnet-5';
+
+/* field key ↔ the snake_case the model returns */
+const FIELDS = [
+  { k: 'birthday',      api: 'birthday',      kind: 'text' },
+  { k: 'residence',     api: 'residence',     kind: 'text' },
+  { k: 'familyHome',    api: 'family_home',   kind: 'text' },
+  { k: 'currentWork',   api: 'current_work',  kind: 'list' },
+  { k: 'formerWork',    api: 'former_work',   kind: 'list' },
+  { k: 'pets',          api: 'pets',          kind: 'list' },
+  { k: 'achievements',  api: 'achievements',  kind: 'list' },
+  { k: 'relationships', api: 'relationships', kind: 'list' },
+  { k: 'interests',     api: 'interests',     kind: 'list' },
+  { k: 'contact',       api: 'contact',       kind: 'area' },
+  { k: 'notes',         api: 'notes',         kind: 'area' },
+];
+
+function blankPerson(){
+  const p = { id: uid(), name: '', aka: [], category: 'other', facts: [], avatarId: '',
+              createdAt: nowISO(), updatedAt: nowISO() };
+  for (const f of FIELDS) p[f.k] = f.kind === 'list' ? [] : '';
+  return p;
+}
+function catLabel(id){
+  if (DEFAULT_CATS.includes(id)) return t('cat.' + id);
+  return id;
+}
+function allCats(){
+  const extra = (state.settings.categories || []).filter(c => !DEFAULT_CATS.includes(c));
+  return [...DEFAULT_CATS.filter(c => c !== 'other'), ...extra, 'other'];
+}
+
+/* ----------------------------- IndexedDB ----------------------------- */
+const DB_NAME = 'palantir', DB_VER = 1;
+let _db = null;
+function db(){
+  if (_db) return Promise.resolve(_db);
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(DB_NAME, DB_VER);
+    r.onupgradeneeded = () => {
+      const d = r.result;
+      if (!d.objectStoreNames.contains('people')) d.createObjectStore('people', { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('photos')){
+        const s = d.createObjectStore('photos', { keyPath: 'id' });
+        s.createIndex('personId', 'personId');
+      }
+      if (!d.objectStoreNames.contains('meta')) d.createObjectStore('meta');
+    };
+    r.onsuccess = () => { _db = r.result; res(_db); };
+    r.onerror = () => rej(r.error);
+  });
+}
+const wrap = req => new Promise((res, rej) => {
+  req.onsuccess = () => res(req.result);
+  req.onerror = () => rej(req.error);
+});
+async function store(name, mode = 'readonly'){
+  return (await db()).transaction(name, mode).objectStore(name);
+}
+const DB = {
+  async all(name){ return wrap((await store(name)).getAll()); },
+  async get(name, k){ return wrap((await store(name)).get(k)); },
+  async put(name, v, k){ return wrap((await store(name, 'readwrite')).put(v, k)); },
+  async del(name, k){ return wrap((await store(name, 'readwrite')).delete(k)); },
+  async clear(name){ return wrap((await store(name, 'readwrite')).clear()); },
+  async byPerson(personId){
+    const s = await store('photos');
+    return wrap(s.index('personId').getAll(personId));
+  },
+};
+
+/* --------------------------- object URLs ----------------------------- */
+const urlCache = new Map();
+function photoURL(photo){
+  if (!photo) return '';
+  if (urlCache.has(photo.id)) return urlCache.get(photo.id);
+  const u = URL.createObjectURL(photo.blob);
+  urlCache.set(photo.id, u);
+  return u;
+}
+function forgetURL(id){
+  const u = urlCache.get(id);
+  if (u){ URL.revokeObjectURL(u); urlCache.delete(id); }
+  photoRecCache.delete(id);
+}
+
+/* ---------------------------- image utils ---------------------------- */
+async function loadBitmap(blob){
+  if (window.createImageBitmap){
+    try { return await createImageBitmap(blob, { imageOrientation: 'from-image' }); }
+    catch { try { return await createImageBitmap(blob); } catch { /* fall through */ } }
+  }
+  return new Promise((res, rej) => {
+    const img = new Image(), u = URL.createObjectURL(blob);
+    img.onload = () => { URL.revokeObjectURL(u); res(img); };
+    img.onerror = e => { URL.revokeObjectURL(u); rej(e); };
+    img.src = u;
+  });
+}
+async function resize(blob, maxEdge, quality){
+  const bmp = await loadBitmap(blob);
+  const w0 = bmp.width || bmp.naturalWidth, h0 = bmp.height || bmp.naturalHeight;
+  const scale = Math.min(1, maxEdge / Math.max(w0, h0));
+  const w = Math.max(1, Math.round(w0 * scale)), h = Math.max(1, Math.round(h0 * scale));
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  c.getContext('2d').drawImage(bmp, 0, 0, w, h);
+  if (bmp.close) bmp.close();
+  const out = await new Promise(r => c.toBlob(r, 'image/jpeg', quality));
+  return { blob: out || blob, w, h };
+}
+function blobToDataURL(blob){
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => res(fr.result);
+    fr.onerror = rej;
+    fr.readAsDataURL(blob);
+  });
+}
+async function blobToBase64(blob){
+  const d = await blobToDataURL(blob);
+  return d.slice(d.indexOf(',') + 1);
+}
+function dataURLToBlob(u){
+  const [head, b64] = u.split(',');
+  const mime = /:(.*?);/.exec(head)[1];
+  const bin = atob(b64), arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+async function ingestPhoto(file, personId){
+  const { blob, w, h } = await resize(file, 1600, 0.85);
+  const rec = { id: uid(), personId: personId || '', blob, w, h, createdAt: nowISO() };
+  await DB.put('photos', rec);
+  return rec;
+}
+
+/* ------------------------------- dates ------------------------------- */
+/* Birthdays are stored as free text so nothing is ever lost, but we try to
+   read a day and month out of them so the app can nudge you in advance. */
+function parseBirthday(raw){
+  const s = String(raw || '').trim();
+  if (!s) return null;
+  let m;
+  if ((m = /^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/.exec(s)))
+    return { y: +m[1], m: +m[2], d: +m[3] };
+  if ((m = /^(\d{1,2})[-./](\d{1,2})[-./](\d{4})/.exec(s)))
+    return { y: +m[3], m: +m[2], d: +m[1] };
+  if ((m = /^(\d{1,2})[-./](\d{1,2})$/.exec(s)))
+    return { y: null, m: +m[2], d: +m[1] };
+  if ((m = /^--(\d{2})-(\d{2})$/.exec(s)))
+    return { y: null, m: +m[1], d: +m[2] };
+  return null;
+}
+/* days until the next occurrence, plus the age reached on it */
+function nextBirthday(b){
+  if (!b || !b.m || !b.d) return null;
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  let year = now.getFullYear();
+  let next = new Date(year, b.m - 1, b.d);
+  if (next < now){ year++; next = new Date(year, b.m - 1, b.d); }
+  return { days: Math.round((next - now) / 86400000), age: b.y ? year - b.y : null };
+}
+function fmtBirthday(raw){
+  const b = parseBirthday(raw);
+  if (!b) return raw || '';
+  const loc = state.lang === 'he' ? 'he-IL' : state.lang === 'pl' ? 'pl-PL' : 'en-GB';
+  const d = new Date(b.y || 2000, b.m - 1, b.d);
+  const opts = b.y ? { day: 'numeric', month: 'long', year: 'numeric' } : { day: 'numeric', month: 'long' };
+  try { return d.toLocaleDateString(loc, opts); } catch { return raw; }
+}
+function fmtDate(iso){
+  if (!iso) return '';
+  const loc = state.lang === 'he' ? 'he-IL' : state.lang === 'pl' ? 'pl-PL' : 'en-GB';
+  try { return new Date(iso).toLocaleDateString(loc, { day: 'numeric', month: 'short', year: 'numeric' }); }
+  catch { return iso.slice(0, 10); }
+}
+function fmtBytes(n){
+  if (!n) return '0 KB';
+  const u = ['B', 'KB', 'MB', 'GB'];
+  let i = 0; while (n >= 1024 && i < u.length - 1){ n /= 1024; i++; }
+  return (n < 10 && i > 0 ? n.toFixed(1) : Math.round(n)) + ' ' + u[i];
+}
+
+/* ------------------------------- crypto ------------------------------ */
+async function sha(text){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/* ------------------------------- state ------------------------------- */
+const state = {
+  lang: 'en',
+  settings: {},
+  people: [],
+  photosOf: new Map(),   // personId -> photo records, filled lazily
+  review: null,
+  draft: { text: '', photos: [] },
+  filter: 'all',
+  query: '',
+  editing: null,
+  listening: false,
+};
+
+async function loadSettings(){
+  const s = (await DB.get('meta', 'settings')) || {};
+  state.settings = {
+    lang: s.lang || (navigator.language || 'en').slice(0, 2),
+    apiKey: s.apiKey || '',
+    model: s.model || DEFAULT_MODEL,
+    pass: s.pass || '',
+    categories: s.categories || [],
+  };
+  if (!I18N[state.settings.lang]) state.settings.lang = 'en';
+  state.lang = state.settings.lang;
+  if (!state.settings.pass) {
+    state.settings.pass = await sha('3671');   // the passcode you asked for
+    await saveSettings();
+  }
+}
+async function saveSettings(){ await DB.put('meta', state.settings, 'settings'); }
+
+async function loadPeople(){
+  const list = await DB.all('people');
+  state.people = list.map(p => {
+    const base = blankPerson();
+    return Object.assign(base, p, { id: p.id });
+  });
+  sortPeople();
+}
+function sortPeople(){
+  const coll = new Intl.Collator(state.lang === 'he' ? 'he' : state.lang);
+  state.people.sort((a, b) => coll.compare(a.name || '', b.name || ''));
+}
+async function savePerson(p){
+  p.updatedAt = nowISO();
+  await DB.put('people', JSON.parse(JSON.stringify(p)));
+  const i = state.people.findIndex(x => x.id === p.id);
+  if (i >= 0) state.people[i] = p; else state.people.push(p);
+  sortPeople();
+}
+async function photosOf(personId){
+  if (state.photosOf.has(personId)) return state.photosOf.get(personId);
+  const list = (await DB.byPerson(personId)).sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+  state.photosOf.set(personId, list);
+  return list;
+}
+function invalidatePhotos(personId){ state.photosOf.delete(personId); }
+
+/* photo records are read on every list render — keep them in memory */
+const photoRecCache = new Map();
+async function photoRec(id){
+  if (!id) return null;
+  if (photoRecCache.has(id)) return photoRecCache.get(id);
+  const rec = (await DB.get('photos', id)) || null;
+  photoRecCache.set(id, rec);
+  return rec;
+}
+const avatarFor = p => photoRec(p.avatarId);
+
+/* --------------------------- draft persistence ----------------------- */
+async function loadDraft(){
+  const d = (await DB.get('meta', 'draft')) || { text: '' };
+  state.draft.text = d.text || '';
+  state.draft.photos = (await DB.byPerson('__draft__'))
+    .sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+}
+let draftTimer = null;
+function saveDraftSoon(){
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(() => DB.put('meta', { text: state.draft.text }, 'draft'), 400);
+}
+async function clearDraft(){
+  for (const ph of state.draft.photos){ forgetURL(ph.id); await DB.del('photos', ph.id); }
+  state.draft = { text: '', photos: [] };
+  await DB.put('meta', { text: '' }, 'draft');
+}
+
+/* ===================================================================== */
+/*                                  AI                                   */
+/* ===================================================================== */
+const API_URL = 'https://api.anthropic.com/v1/messages';
+
+function extractionSchema(cats){
+  const str = { type: 'string' };
+  const arr = { type: 'array', items: { type: 'string' } };
+  const fieldProps = {};
+  for (const f of FIELDS) fieldProps[f.api] = f.kind === 'list' ? arr : str;
+  return {
+    type: 'object',
+    properties: {
+      entries: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            match_id: str,
+            name: str,
+            category: { type: 'string', enum: cats },
+            fields: { type: 'object', properties: fieldProps, required: Object.keys(fieldProps), additionalProperties: false },
+            facts: arr,
+            photo_indexes: { type: 'array', items: { type: 'integer' } },
+          },
+          required: ['match_id', 'name', 'category', 'fields', 'facts', 'photo_indexes'],
+          additionalProperties: false,
+        },
+      },
+      leftovers: arr,
+    },
+    required: ['entries', 'leftovers'],
+    additionalProperties: false,
+  };
+}
+
+function systemPrompt(cats){
+  const roster = state.people.map(p => ({
+    id: p.id, name: p.name, aka: p.aka, category: p.category,
+    lives: p.residence || undefined, work: (p.currentWork || [])[0] || undefined,
+  }));
+  const langName = { en: 'English', pl: 'Polish', he: 'Hebrew' }[state.lang] || 'English';
+  return [
+    'You sort a person\'s spoken or typed notes into profiles of the people they know.',
+    'Today is ' + new Date().toISOString().slice(0, 10) + '. The user writes in ' + langName + ' but may mix languages.',
+    '',
+    'Return one entry per person mentioned in the note.',
+    '- match_id: the id of an existing person from the roster below when the note is clearly about them (same name, nickname, or unmistakable context). Otherwise "".',
+    '- name: the person\'s name as the user would write it. For an existing person, repeat their stored name.',
+    '- category: pick from ' + cats.join(', ') + '. Keep an existing person\'s category unless the note plainly says otherwise.',
+    '- fields: only what the note actually states. Leave a string "" and a list [] when the note says nothing. Never guess, never carry information over from one person to another.',
+    '  birthday: normalise to YYYY-MM-DD, or MM-DD when the year is unknown; keep any extra wording out of it.',
+    '  current_work / former_work: "Role at Company" or just the company. Move a job to former_work when the note says they left it.',
+    '  relationships: family members and partners, e.g. "sister Maja", "wife Ola".',
+    '- facts: everything else worth remembering, one short sentence each, in the language the user used. Write them as standalone statements — the user will read them months from now. Do not repeat something already captured in fields.',
+    '- photo_indexes: indexes of the attached photos that show or belong to this person, based on what the note says about them. Use [] when unsure.',
+    '',
+    'leftovers: any part of the note that is not about a specific person. Use [] when there is none.',
+    'Say nothing outside the JSON.',
+    '',
+    'Roster of people already on file (JSON):',
+    JSON.stringify(roster),
+  ].join('\n');
+}
+
+async function callClaude(body){
+  const key = (state.settings.apiKey || '').trim();
+  if (!key) throw new Error('NO_KEY');
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify(body),
+  });
+  const text = await res.text();
+  let json = null;
+  try { json = JSON.parse(text); } catch { /* keep raw */ }
+  if (!res.ok){
+    const msg = json?.error?.message || text.slice(0, 300) || ('HTTP ' + res.status);
+    throw new Error(msg);
+  }
+  return json;
+}
+
+function firstText(msg){
+  for (const b of msg?.content || []) if (b.type === 'text' && b.text) return b.text;
+  return '';
+}
+function parseJSONLoose(s){
+  try { return JSON.parse(s); } catch { /* try harder */ }
+  const a = s.indexOf('{'), b = s.lastIndexOf('}');
+  if (a >= 0 && b > a){ try { return JSON.parse(s.slice(a, b + 1)); } catch { /* no */ } }
+  return null;
+}
+
+async function sortWithAI(){
+  const cats = allCats();
+  const content = [];
+  for (const ph of state.draft.photos){
+    const small = await resize(ph.blob, 1400, 0.82);
+    content.push({
+      type: 'image',
+      source: { type: 'base64', media_type: 'image/jpeg', data: await blobToBase64(small.blob) },
+    });
+  }
+  const note = state.draft.text.trim();
+  content.push({
+    type: 'text',
+    text: (state.draft.photos.length
+      ? 'Attached photos, in order, are indexes 0..' + (state.draft.photos.length - 1) + '.\n\n'
+      : '') + 'Note:\n' + (note || '(no text — work from the photos alone)'),
+  });
+
+  const model = state.settings.model || DEFAULT_MODEL;
+  const output_config = { format: { type: 'json_schema', schema: extractionSchema(cats) } };
+  if (takesEffort(model)) output_config.effort = 'medium';
+
+  const msg = await callClaude({
+    model, max_tokens: 8000,
+    system: systemPrompt(cats),
+    messages: [{ role: 'user', content }],
+    output_config,
+  });
+
+  if (msg.stop_reason === 'refusal') throw new Error('The model declined to answer that note.');
+  const data = parseJSONLoose(firstText(msg));
+  if (!data || !Array.isArray(data.entries)) throw new Error('Unexpected answer from the model.');
+  return data;
+}
+
+/* Build the reviewable proposal from the model's answer. */
+function buildReview(data){
+  const entries = [];
+  for (const e of data.entries || []){
+    const name = String(e.name || '').trim();
+    if (!name) continue;
+    const existing = e.match_id ? state.people.find(p => p.id === e.match_id) : null;
+    const changes = [];
+    for (const f of FIELDS){
+      const raw = (e.fields || {})[f.api];
+      if (f.kind === 'list'){
+        const vals = uniq(clean(raw));
+        const have = existing ? (existing[f.k] || []) : [];
+        const add = vals.filter(v => !have.some(h => h.toLowerCase() === v.toLowerCase()));
+        if (add.length) changes.push({ key: f.k, kind: 'list', value: add, old: have.join(', '), on: true });
+      } else {
+        const v = String(raw ?? '').trim();
+        if (!v) continue;
+        const old = existing ? String(existing[f.k] || '') : '';
+        if (old.trim().toLowerCase() === v.toLowerCase()) continue;
+        changes.push({ key: f.k, kind: 'text', value: v, old, on: true });
+      }
+    }
+    const facts = clean(e.facts).map(text => ({ text, on: true }));
+    const photos = (Array.isArray(e.photo_indexes) ? e.photo_indexes : [])
+      .map(i => state.draft.photos[i]).filter(Boolean).map(p => p.id);
+    if (!changes.length && !facts.length && !photos.length && existing) continue;
+    entries.push({
+      id: uid(),
+      on: true,
+      name,
+      matchId: existing ? existing.id : '',
+      category: (e.category && allCats().includes(e.category)) ? e.category
+              : (existing ? existing.category : 'other'),
+      changes, facts, photos,
+    });
+  }
+  const claimed = new Set(entries.flatMap(e => e.photos));
+  const loose = state.draft.photos.filter(p => !claimed.has(p.id)).map(p => p.id);
+  if (loose.length && entries.length) entries[0].photos.push(...loose);
+  return { entries, leftovers: clean(data.leftovers), at: nowISO() };
+}
+
+async function applyReview(){
+  const rev = state.review;
+  if (!rev) return 0;
+  let n = 0;
+  for (const e of rev.entries){
+    if (!e.on) continue;
+    let p = e.matchId ? state.people.find(x => x.id === e.matchId) : null;
+    if (!p){ p = blankPerson(); p.name = e.name.trim(); }
+    else if (e.name.trim() && e.name.trim() !== p.name){
+      p.aka = uniq([...(p.aka || []), e.name.trim()].filter(v => v !== p.name));
+    }
+    p.category = e.category || p.category;
+    for (const c of e.changes){
+      if (!c.on) continue;
+      if (c.kind === 'list') p[c.key] = uniq([...(p[c.key] || []), ...c.value]);
+      else p[c.key] = c.value;
+    }
+    for (const f of e.facts){
+      if (!f.on) continue;
+      p.facts = p.facts || [];
+      p.facts.push({ id: uid(), text: f.text, at: nowISO() });
+    }
+    await savePerson(p);
+    for (const photoId of e.photos){
+      const rec = await DB.get('photos', photoId);
+      if (!rec) continue;
+      rec.personId = p.id;
+      await DB.put('photos', rec);
+      if (!p.avatarId){ p.avatarId = rec.id; await savePerson(p); }
+      invalidatePhotos(p.id);
+      state.draft.photos = state.draft.photos.filter(x => x.id !== photoId);
+    }
+    n++;
+  }
+  for (const ph of state.draft.photos){ forgetURL(ph.id); await DB.del('photos', ph.id); }
+  state.draft = { text: '', photos: [] };
+  await DB.put('meta', { text: '' }, 'draft');
+  state.review = null;
+  await DB.del('meta', 'review');
+  return n;
+}
+
+/* ===================================================================== */
+/*                              lock screen                              */
+/* ===================================================================== */
+let entered = '';
+function paintDots(){
+  $$('#dots .dot').forEach((d, i) => d.classList.toggle('on', i < entered.length));
+}
+function buildPad(){
+  const pad = $('#pad');
+  const keys = ['1','2','3','4','5','6','7','8','9','', '0', '⌫'];
+  pad.innerHTML = keys.map(k =>
+    k === '' ? '<div class="key blank"></div>'
+    : k === '⌫' ? '<button class="key fn" data-key="del" aria-label="delete">⌫</button>'
+    : `<button class="key" data-key="${k}">${k}</button>`).join('');
+}
+async function pressKey(k){
+  const lock = $('#lock');
+  lock.classList.remove('err');
+  $('#lockMsg').textContent = '';
+  if (k === 'del'){ entered = entered.slice(0, -1); paintDots(); return; }
+  if (entered.length >= 4) return;
+  entered += k;
+  paintDots();
+  if (entered.length === 4){
+    const ok = (await sha(entered)) === state.settings.pass;
+    if (ok){
+      entered = '';
+      await unlock();
+    } else {
+      lock.classList.add('err');
+      $('#lockMsg').textContent = t('lock.wrong');
+      if (navigator.vibrate) navigator.vibrate(60);
+      await sleep(420);
+      entered = ''; paintDots();
+    }
+  }
+}
+async function unlock(){
+  paintDots();
+  $('#lock').classList.add('hide');
+  $('#app').classList.add('on');
+  $('#tabs').classList.remove('hide');
+  lastHidden = 0;
+  render();
+}
+function lockNow(){
+  entered = ''; paintDots();
+  $('#lockMsg').textContent = '';
+  $('#lock').classList.remove('hide', 'err');
+  $('#app').classList.remove('on');
+  $('#tabs').classList.add('hide');
+}
+let lastHidden = 0;
+const RELOCK_AFTER = 3 * 60 * 1000;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden){ lastHidden = Date.now(); return; }
+  const away = lastHidden ? Date.now() - lastHidden : 0;
+  if (away > RELOCK_AFTER && $('#app').classList.contains('on')) lockNow();
+});
+
+/* ===================================================================== */
+/*                                 views                                 */
+/* ===================================================================== */
+const TAB_ICONS = {
+  capture: '<svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>',
+  people:  '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M3 20c0-3.3 2.7-5.6 6-5.6s6 2.3 6 5.6"/><path d="M16 5.2A3.2 3.2 0 0 1 16 11"/><path d="M17.5 14.8c2.1.6 3.5 2.3 3.5 4.6"/></svg>',
+  settings:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.6a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2v.2a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-3-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.9h-.2a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.2-3l-.1-.1A2 2 0 1 1 6.8 2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1a1.7 1.7 0 0 0 1-1.5v-.2a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1h.2a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+};
+function renderTabs(){
+  const cur = route().name;
+  const on = { capture: 'capture', people: 'people', person: 'people', edit: 'people', review: 'capture', settings: 'settings' }[cur] || 'capture';
+  $('#tabs').innerHTML = ['capture', 'people', 'settings'].map(k =>
+    `<button class="tab ${k === on ? 'on' : ''}" data-go="#/${k}">${TAB_ICONS[k]}<span>${esc(t('tab.' + k))}</span></button>`
+  ).join('');
+}
+
+function route(){
+  const h = (location.hash || '#/capture').replace(/^#\/?/, '');
+  const [name, arg] = h.split('/');
+  return { name: name || 'capture', arg: arg || '' };
+}
+function go(hash){ location.hash = hash; }
+
+function topbar({ title, left = '', right = '' }){
+  $('#tbTitle').textContent = title;
+  $('#tbLeft').innerHTML = left;
+  $('#tbRight').innerHTML = right;
+}
+const backBtn = to => `<button class="tb-btn plain" data-go="${to}" aria-label="${esc(t('c.back'))}">
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="${document.documentElement.dir === 'rtl' ? 'transform:scaleX(-1)' : ''}"><path d="M15 5l-7 7 7 7"/></svg></button>`;
+
+async function render(){
+  if (!$('#app').classList.contains('on')) return;
+  const r = route();
+  renderTabs();
+  const view = $('#view');
+  view.scrollTop = 0;
+  window.scrollTo(0, 0);
+  try {
+    if (r.name === 'people') await viewPeople(view);
+    else if (r.name === 'person') await viewPerson(view, r.arg);
+    else if (r.name === 'edit') await viewEdit(view, r.arg);
+    else if (r.name === 'settings') await viewSettings(view);
+    else if (r.name === 'review') await viewReview(view);
+    else await viewCapture(view);
+  } catch (err){
+    console.error(err);
+    view.innerHTML = `<div class="empty">${esc(t('c.error'))}<br><span style="font-size:12px">${esc(err.message || '')}</span></div>`;
+  }
+}
+
+/* ------------------------------ capture ------------------------------ */
+async function viewCapture(view){
+  const hour = new Date().getHours();
+  const greet = hour < 5 ? 'greet.night' : hour < 12 ? 'greet.morning' : hour < 18 ? 'greet.afternoon' : 'greet.evening';
+  const hasKey = !!(state.settings.apiKey || '').trim();
+  const hasMic = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+
+  const upcoming = state.people
+    .map(p => ({ p, b: nextBirthday(parseBirthday(p.birthday)) }))
+    .filter(x => x.b && x.b.days <= 45)
+    .sort((a, b) => a.b.days - b.b.days)
+    .slice(0, 5);
+
+  const recent = [...state.people]
+    .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))
+    .slice(0, 5);
+
+  topbar({ title: 'Palantir', right: `<button class="tb-btn plain" data-act="newPerson" aria-label="${esc(t('ppl.new'))}">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>` });
+
+  view.innerHTML = `
+    <div class="hero">
+      <svg class="mark" width="38" height="38" viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="36" r="30.25" fill="none" stroke="#fff" stroke-width="11.5"/>
+        <path d="M4.5 78.49 L50 88.5 L95.5 78.49 L95.5 89.99 L50 100 L4.5 89.99 Z" fill="#fff"/>
+      </svg>
+      <div>
+        <h1>${esc(t(greet))}</h1>
+        <p>${esc(t('cap.lede'))}</p>
+      </div>
+    </div>
+
+    <div class="capture-box">
+      <textarea id="draft" placeholder="${esc(t('cap.ph'))}" spellcheck="true">${esc(state.draft.text)}</textarea>
+      <div class="capture-tools">
+        ${hasMic ? `<button class="icon-btn ${state.listening ? 'rec' : ''}" id="micBtn" aria-label="${esc(t(state.listening ? 'cap.micStop' : 'cap.mic'))}">
+          <svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>
+        </button>` : ''}
+        <button class="icon-btn" data-act="pickPhoto" aria-label="${esc(t('cap.photo'))}">
+          <svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="14" rx="2.5"/><circle cx="12" cy="12.5" r="3.3"/><path d="M8 5.5l1.2-2h5.6L16 5.5"/></svg>
+        </button>
+        <span style="flex:1"></span>
+        ${state.draft.text || state.draft.photos.length ? `<button class="icon-btn" data-act="clearDraft" aria-label="${esc(t('cap.clear'))}">
+          <svg viewBox="0 0 24 24"><path d="M6 7h12M10 7V5.5h4V7M8 7l.7 12h6.6L16 7"/></svg></button>` : ''}
+      </div>
+    </div>
+
+    ${state.draft.photos.length ? `<div class="thumbs">${state.draft.photos.map(p =>
+      `<div class="thumb"><img src="${photoURL(p)}" alt=""><button data-act="dropDraftPhoto" data-id="${p.id}" aria-label="${esc(t('c.delete'))}">×</button></div>`
+    ).join('')}</div>` : ''}
+
+    <div style="margin-top:14px">
+      <button class="btn primary" id="sortBtn" ${hasKey ? '' : 'disabled'}>
+        <span id="sortLabel">${esc(t('cap.sort'))}</span>
+      </button>
+      ${hasKey ? '' : `<div class="hint">${esc(t('cap.noKey'))}</div>`}
+      ${hasMic ? '' : `<div class="hint">${esc(t('cap.noMic'))}</div>`}
+    </div>
+
+    ${upcoming.length ? `<div class="sec">${esc(t('cap.upcoming'))}</div>
+      <div class="card">${(await Promise.all(upcoming.map(async x => {
+        const age = x.b.age !== null ? t('c.turns', { n: x.b.age }) : '';
+        const when = x.b.days === 0 ? t('c.today') : x.b.days === 1 ? t('c.tomorrow') : t('c.inDays', { n: x.b.days });
+        return `<button class="bday" data-go="#/person/${x.p.id}" style="width:100%;text-align:start">
+          ${await avatarHTML(x.p, 36)}
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.p.name)}</span>
+          <span class="when">${esc(when)}${age ? '<br>' + esc(age) : ''}</span>
+        </button>`;
+      }))).join('')}</div>` : ''}
+
+    ${recent.length ? `<div class="sec">${esc(t('cap.recent'))}</div>
+      <div class="card">${(await Promise.all(recent.map(async p =>
+        `<button class="bday" data-go="#/person/${p.id}" style="width:100%;text-align:start">
+          ${await avatarHTML(p, 36)}
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name)}</span>
+          <span class="when">${esc(catLabel(p.category))}</span>
+        </button>`))).join('')}</div>` : ''}
+
+    ${!state.people.length ? `<div style="margin-top:22px"><button class="btn ghost" data-act="newPerson">${esc(t('cap.addManual'))}</button></div>` : ''}
+  `;
+
+  const ta = $('#draft');
+  ta.addEventListener('input', () => { state.draft.text = ta.value; saveDraftSoon(); });
+  $('#sortBtn')?.addEventListener('click', runSort);
+  $('#micBtn')?.addEventListener('click', toggleMic);
+}
+
+async function avatarHTML(p, size = 46){
+  const rec = await avatarFor(p);
+  const st = `width:${size}px;height:${size}px;font-size:${Math.round(size * 0.38)}px`;
+  if (rec) return `<img class="avatar" style="${st}" src="${photoURL(rec)}" alt="">`;
+  const initials = (p.name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+  return `<span class="avatar" style="${st}">${esc(initials || '?')}</span>`;
+}
+
+async function runSort(){
+  if (!state.draft.text.trim() && !state.draft.photos.length){ toast(t('cap.empty')); return; }
+  const btn = $('#sortBtn');
+  btn.disabled = true;
+  $('#sortLabel').innerHTML = `<span class="spin"></span> ${esc(t('cap.sorting'))}`;
+  try {
+    const data = await sortWithAI();
+    const review = buildReview(data);
+    if (!review.entries.length && !review.leftovers.length){ toast(t('rev.none')); return; }
+    state.review = review;
+    await DB.put('meta', review, 'review');
+    go('#/review');
+  } catch (err){
+    console.error(err);
+    toast(err.message === 'NO_KEY' ? t('cap.noKey') : (err.message || t('c.error')), 5200);
+  } finally {
+    btn.disabled = false;
+    $('#sortLabel').textContent = t('cap.sort');
+  }
+}
+
+/* dictation */
+let recog = null;
+function toggleMic(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  if (state.listening){ recog?.stop(); return; }
+  recog = new SR();
+  recog.lang = SPEECH_LOCALE[state.lang] || 'en-US';
+  recog.continuous = true;
+  recog.interimResults = true;
+  let base = state.draft.text;
+  recog.onresult = e => {
+    let finalTx = '', interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++){
+      const r = e.results[i];
+      if (r.isFinal) finalTx += r[0].transcript;
+      else interim += r[0].transcript;
+    }
+    if (finalTx){
+      base = (base ? base.replace(/\s+$/, '') + ' ' : '') + finalTx.trim();
+      state.draft.text = base;
+      saveDraftSoon();
+    }
+    const ta = $('#draft');
+    if (ta){ ta.value = base + (interim ? ' ' + interim : ''); ta.scrollTop = ta.scrollHeight; }
+  };
+  recog.onerror = e => { toast(String(e.error || t('c.error'))); };
+  recog.onend = () => { state.listening = false; $('#micBtn')?.classList.remove('rec'); };
+  try { recog.start(); state.listening = true; $('#micBtn')?.classList.add('rec'); }
+  catch { toast(t('c.error')); }
+}
+
+/* ------------------------------- review ------------------------------ */
+async function viewReview(view){
+  if (!state.review) state.review = await DB.get('meta', 'review');
+  const rev = state.review;
+  topbar({
+    title: t('rev.title'),
+    left: backBtn('#/capture'),
+    right: `<button class="tb-btn" data-act="discardReview">${esc(t('rev.discard'))}</button>
+            <button class="tb-btn strong" data-act="applyReview">${esc(t('rev.apply'))}</button>`,
+  });
+  if (!rev || (!rev.entries.length && !rev.leftovers.length)){
+    view.innerHTML = `<div class="empty">${esc(t('rev.none'))}</div>`;
+    return;
+  }
+  const cats = allCats();
+  const photoTargets = ei => rev.entries
+    .map((x, i) => `<option value="${i}" ${i === ei ? 'selected' : ''}>${esc(x.name || '—')}</option>`)
+    .concat(`<option value="-">${esc(t('rev.photoDrop'))}</option>`).join('');
+  const cards = await Promise.all(rev.entries.map(async (e, ei) => {
+    const existing = e.matchId ? state.people.find(p => p.id === e.matchId) : null;
+    const photos = e.photos.map(id => state.draft.photos.find(p => p.id === id)).filter(Boolean);
+    return `<div class="rv ${e.on ? '' : 'off'}" data-e="${ei}">
+      <div class="rv-head">
+        <button class="box ${e.on ? 'on' : ''}" data-act="rvToggle" data-e="${ei}">${e.on ? '✓' : ''}</button>
+        <input type="text" data-act="rvName" data-e="${ei}" value="${esc(e.name)}">
+        <span class="badge ${existing ? '' : 'new'}">${esc(existing ? t('rev.update') : t('rev.new'))}</span>
+      </div>
+      <div class="field">
+        <label class="lbl">${esc(t('f.category'))}</label>
+        <select data-act="rvCat" data-e="${ei}">
+          ${cats.map(c => `<option value="${esc(c)}" ${c === e.category ? 'selected' : ''}>${esc(catLabel(c))}</option>`).join('')}
+        </select>
+      </div>
+      ${e.changes.length ? `<div style="margin-top:12px">${e.changes.map((c, ci) => `
+        <button class="tick" data-act="rvChange" data-e="${ei}" data-c="${ci}">
+          <span class="box ${c.on ? 'on' : ''}">${c.on ? '✓' : ''}</span>
+          <span style="min-width:0">
+            <span class="k">${esc(t('f.' + c.key))}</span>
+            <span class="v">${esc(c.kind === 'list' ? c.value.join(' · ') : c.value)}</span>
+            ${c.old ? `<span class="old ${c.kind === 'list' ? 'keep' : ''}">${esc(c.kind === 'list' ? t('rev.already') : t('rev.replaces'))} ${esc(c.old)}</span>` : ''}
+          </span>
+        </button>`).join('')}</div>` : ''}
+      ${e.facts.length ? `<div class="sec" style="margin:16px 0 2px">${esc(t('rev.facts'))}</div>
+        ${e.facts.map((f, fi) => `
+        <button class="tick" data-act="rvFact" data-e="${ei}" data-f="${fi}">
+          <span class="box ${f.on ? 'on' : ''}">${f.on ? '✓' : ''}</span>
+          <span class="v" style="min-width:0">${esc(f.text)}</span>
+        </button>`).join('')}` : ''}
+      ${photos.length ? `<div class="sec" style="margin:16px 0 2px">${esc(t('rev.photos'))}</div>
+        <div class="thumbs">${photos.map(p => `<div class="rv-photo">
+          <img src="${photoURL(p)}" alt="">
+          <select data-act="rvPhotoMove" data-pid="${p.id}">${photoTargets(ei)}</select>
+        </div>`).join('')}</div>` : ''}
+    </div>`;
+  }));
+
+  view.innerHTML = `
+    <div class="hint" style="margin:0 0 14px">${esc(t('rev.lede'))}</div>
+    ${cards.join('')}
+    ${rev.leftovers.length ? `<div class="sec">${esc(t('rev.leftovers'))}</div>
+      <div class="card"><div class="dl"><div class="v" style="color:var(--dim)">${rev.leftovers.map(esc).join('<br>')}</div></div></div>` : ''}
+    <div style="margin-top:20px"><button class="btn primary" data-act="applyReview">${esc(t('rev.apply'))}</button></div>
+    <div style="margin-top:10px"><button class="btn ghost" data-act="discardReview">${esc(t('rev.discard'))}</button></div>
+  `;
+}
+
+/* ------------------------------- people ------------------------------ */
+async function viewPeople(view){
+  topbar({
+    title: t('ppl.title'),
+    right: `<button class="tb-btn plain" data-act="newPerson" aria-label="${esc(t('ppl.new'))}">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>`,
+  });
+
+  const used = new Set(state.people.map(p => p.category));
+  const cats = ['all', ...allCats().filter(c => used.has(c))];
+  if (state.filter !== 'all' && !cats.includes(state.filter)) state.filter = 'all';
+
+  view.innerHTML = `
+    <input type="search" id="q" placeholder="${esc(t('ppl.search'))}" value="${esc(state.query)}" autocomplete="off">
+    <div class="chips" style="margin-top:12px" id="chips">
+      ${cats.map(c => `<button class="chip ${state.filter === c ? 'on' : ''}" data-act="filter" data-cat="${esc(c)}">${esc(c === 'all' ? t('ppl.all') : catLabel(c))}</button>`).join('')}
+    </div>
+    <div id="pcount" class="hint" style="margin:2px 0 4px"></div>
+    <div class="plist" id="plist"></div>
+  `;
+  await paintPeopleList();
+
+  /* Typing filters the list in place — re-rendering the whole view would
+     steal focus and close the keyboard on a phone. */
+  const qi = $('#q');
+  qi.addEventListener('input', () => {
+    state.query = qi.value;
+    clearTimeout(qi._t);
+    qi._t = setTimeout(paintPeopleList, 160);
+  });
+}
+
+async function paintPeopleList(){
+  const box = $('#plist');
+  if (!box) return;
+  const q = state.query.trim().toLowerCase();
+  const inFilter = p => state.filter === 'all' || p.category === state.filter;
+  const hay = p => [p.name, ...(p.aka || []), catLabel(p.category),
+      ...FIELDS.map(f => Array.isArray(p[f.k]) ? p[f.k].join(' ') : p[f.k]),
+      ...(p.facts || []).map(f => f.text)].join(' ').toLowerCase();
+  const list = state.people.filter(p => inFilter(p) && (!q || hay(p).includes(q)));
+  const flip = document.documentElement.dir === 'rtl' ? 'transform:scaleX(-1)' : '';
+
+  const rows = await Promise.all(list.map(async p => {
+    const bits = [catLabel(p.category), (p.currentWork || [])[0], p.residence].filter(Boolean);
+    return `<button class="prow" data-go="#/person/${p.id}">
+      ${await avatarHTML(p)}
+      <span class="col"><span class="nm">${esc(p.name)}</span><span class="sub">${esc(bits.join(' · '))}</span></span>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" stroke-width="1.8" stroke-linecap="round" style="flex:none;${flip}"><path d="M9 5l7 7-7 7"/></svg>
+    </button>`;
+  }));
+
+  box.innerHTML = list.length ? rows.join('')
+    : `<div class="empty">${esc(state.people.length ? t('ppl.none') : t('ppl.empty')).replace(/\n/g, '<br>')}</div>`;
+  $('#pcount').textContent = list.length
+    ? (list.length === 1 ? t('ppl.count1') : t('ppl.count', { n: list.length })) : '';
+}
+
+/* ------------------------------- person ------------------------------ */
+async function viewPerson(view, id){
+  const p = state.people.find(x => x.id === id);
+  if (!p){ go('#/people'); return; }
+  const photos = await photosOf(p.id);
+
+  topbar({
+    title: p.name || t('per.new'),
+    left: backBtn('#/people'),
+    right: `<button class="tb-btn" data-go="#/edit/${p.id}">${esc(t('per.edit'))}</button>`,
+  });
+
+  const items = [];
+  for (const f of FIELDS){
+    const v = p[f.k];
+    if (f.kind === 'list'){
+      const vals = clean(v);
+      if (!vals.length) continue;
+      items.push(`<div class="item"><div class="k">${esc(t('f.' + f.k))}</div>
+        <ul>${vals.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`);
+    } else {
+      const s = String(v || '').trim();
+      if (!s) continue;
+      const shown = f.k === 'birthday' ? fmtBirthday(s) : s;
+      items.push(`<div class="item"><div class="k">${esc(t('f.' + f.k))}</div><div class="v">${esc(shown)}</div></div>`);
+    }
+  }
+  if ((p.aka || []).length)
+    items.unshift(`<div class="item"><div class="k">${esc(t('f.aka'))}</div><div class="v">${esc(p.aka.join(', '))}</div></div>`);
+
+  const facts = [...(p.facts || [])].reverse();
+
+  view.innerHTML = `
+    <div class="phero">
+      ${await avatarHTML(p, 76)}
+      <div style="min-width:0">
+        <h1 class="u-sel">${esc(p.name)}</h1>
+        <div class="meta">${esc(catLabel(p.category))}${p.birthday ? ' · ' + esc(fmtBirthday(p.birthday)) : ''}</div>
+      </div>
+    </div>
+
+    <div class="sec">${esc(t('per.facts'))}</div>
+    <div class="card">
+      <div class="row" style="margin-bottom:${facts.length ? '4px' : '0'}">
+        <input type="text" id="factIn" placeholder="${esc(t('per.addFact'))}">
+        <button class="btn small primary" data-act="addFact" data-id="${p.id}" style="flex:none">${esc(t('c.add'))}</button>
+      </div>
+      ${facts.length ? facts.map(f => `<div class="fact">
+          <span class="tx u-sel">${esc(f.text)}<span class="dt">${esc(fmtDate(f.at))}</span></span>
+          <button class="x" data-act="delFact" data-id="${p.id}" data-fid="${f.id}" aria-label="${esc(t('c.delete'))}">×</button>
+        </div>`).join('')
+        : `<div class="hint" style="margin-top:10px">${esc(t('per.noFacts'))}</div>`}
+    </div>
+
+    ${items.length ? `<div class="sec">${esc(t('per.details'))}</div>
+      <div class="card"><div class="dl">${items.join('')}</div></div>` : ''}
+
+    <div class="sec">${esc(t('per.photos'))}</div>
+    <div class="card">
+      ${photos.length ? `<div class="gal" style="margin-bottom:12px">${photos.map(ph =>
+        `<div class="cell ${ph.id === p.avatarId ? 'is-av' : ''}"><img src="${photoURL(ph)}" alt="" data-act="photoMenu" data-id="${p.id}" data-pid="${ph.id}"></div>`).join('')}</div>` : ''}
+      <button class="btn ghost" data-act="pickPersonPhoto" data-id="${p.id}">${esc(t('per.addPhoto'))}</button>
+    </div>
+
+    <div style="margin-top:26px">
+      <button class="btn danger ghost" data-act="delPerson" data-id="${p.id}">${esc(t('per.delete'))}</button>
+    </div>
+    <div class="hint" style="text-align:center;margin-top:12px">${esc(fmtDate(p.createdAt))}</div>
+  `;
+
+  $('#factIn')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter'){ e.preventDefault(); addFact(p.id); }
+  });
+}
+
+async function addFact(id){
+  const inp = $('#factIn');
+  const text = (inp?.value || '').trim();
+  if (!text) return;
+  const p = state.people.find(x => x.id === id);
+  p.facts = p.facts || [];
+  p.facts.push({ id: uid(), text, at: nowISO() });
+  await savePerson(p);
+  inp.value = '';
+  render();
+}
+
+/* -------------------------------- edit ------------------------------- */
+async function viewEdit(view, id){
+  const isNew = id === 'new';
+  const src = isNew ? blankPerson() : state.people.find(x => x.id === id);
+  if (!src){ go('#/people'); return; }
+  state.editing = JSON.parse(JSON.stringify(src));
+  const p = state.editing;
+
+  topbar({
+    title: isNew ? t('per.new') : t('per.edit'),
+    left: `<button class="tb-btn plain" data-act="cancelEdit">${esc(t('c.cancel'))}</button>`,
+    right: `<button class="tb-btn strong" data-act="saveEdit" data-new="${isNew ? 1 : 0}">${esc(t('c.save'))}</button>`,
+  });
+
+  const cats = allCats();
+  view.innerHTML = `
+    <div class="field">
+      <label class="lbl">${esc(t('f.name'))}</label>
+      <input type="text" data-k="name" value="${esc(p.name)}" autocapitalize="words">
+    </div>
+    <div class="field">
+      <label class="lbl">${esc(t('f.category'))}</label>
+      <select data-k="category">${cats.map(c => `<option value="${esc(c)}" ${c === p.category ? 'selected' : ''}>${esc(catLabel(c))}</option>`).join('')}</select>
+    </div>
+    <div class="field">
+      <label class="lbl">${esc(t('f.aka'))}</label>
+      <input type="text" data-k="aka" data-list="1" value="${esc((p.aka || []).join(', '))}" placeholder="Nick, Nickname">
+    </div>
+    ${FIELDS.map(f => {
+      const label = esc(t('f.' + f.k));
+      if (f.kind === 'list')
+        return `<div class="field"><label class="lbl">${label} <span style="color:var(--faint)">· ${esc(t('f.multiHint'))}</span></label>
+          <textarea data-k="${f.k}" data-lines="1" style="min-height:70px">${esc((p[f.k] || []).join('\n'))}</textarea></div>`;
+      if (f.kind === 'area')
+        return `<div class="field"><label class="lbl">${label}</label>
+          <textarea data-k="${f.k}" style="min-height:76px">${esc(p[f.k] || '')}</textarea></div>`;
+      return `<div class="field"><label class="lbl">${label}</label>
+        <input type="text" data-k="${f.k}" value="${esc(p[f.k] || '')}" ${f.k === 'birthday' ? 'placeholder="1994-03-17"' : ''}></div>`;
+    }).join('')}
+    <div style="margin-top:22px"><button class="btn primary" data-act="saveEdit" data-new="${isNew ? 1 : 0}">${esc(t('c.save'))}</button></div>
+  `;
+}
+
+function collectEdit(){
+  const p = state.editing;
+  for (const el of $$('#view [data-k]')){
+    const k = el.dataset.k;
+    if (el.dataset.list) p[k] = uniq(el.value.split(','));
+    else if (el.dataset.lines) p[k] = uniq(el.value.split('\n'));
+    else p[k] = el.value.trim();
+  }
+  return p;
+}
+
+/* ------------------------------ settings ----------------------------- */
+async function viewSettings(view){
+  topbar({ title: t('set.title') });
+  const photos = await DB.all('photos');
+  const bytes = photos.reduce((n, p) => n + (p.blob?.size || 0), 0);
+  const cats = allCats();
+
+  view.innerHTML = `
+    <div class="sec">${esc(t('set.language'))}</div>
+    <div class="card">
+      <div class="chips" style="padding-bottom:0">
+        ${LANGS.map(([code, label]) => `<button class="chip ${state.lang === code ? 'on' : ''}" data-act="setLang" data-lang="${code}">${esc(label)}</button>`).join('')}
+      </div>
+    </div>
+
+    <div class="sec">${esc(t('set.ai'))}</div>
+    <div class="card">
+      <div class="field">
+        <label class="lbl">${esc(t('set.apiKey'))}</label>
+        <input type="password" id="apiKey" value="${esc(state.settings.apiKey)}" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+        <div class="hint">${esc(t('set.apiKeyHint'))}</div>
+      </div>
+      <div class="field">
+        <label class="lbl">${esc(t('set.model'))}</label>
+        <select id="model">${MODELS.map(([v, l]) => `<option value="${v}" ${state.settings.model === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
+      </div>
+      <div class="field"><button class="btn ghost" data-act="testKey"><span id="testLabel">${esc(t('set.test'))}</span></button></div>
+    </div>
+
+    <div class="sec">${esc(t('set.cats'))}</div>
+    <div class="card">
+      <div class="chips" style="padding-bottom:0;flex-wrap:wrap">
+        ${cats.map(c => {
+          const custom = !DEFAULT_CATS.includes(c);
+          return `<span class="chip">${esc(catLabel(c))}${custom ? ` <button data-act="delCat" data-cat="${esc(c)}" style="color:var(--faint);font-size:15px;line-height:1">×</button>` : ''}</span>`;
+        }).join('')}
+      </div>
+      <div class="row" style="margin-top:12px">
+        <input type="text" id="newCat" placeholder="${esc(t('set.catPh'))}">
+        <button class="btn small primary" data-act="addCat" style="flex:none">${esc(t('c.add'))}</button>
+      </div>
+    </div>
+
+    <div class="sec">${esc(t('set.passcode'))}</div>
+    <div class="card">
+      <div class="field"><label class="lbl">${esc(t('set.newPass'))}</label>
+        <input type="password" id="p1" inputmode="numeric" maxlength="4" pattern="[0-9]*" autocomplete="off"></div>
+      <div class="field"><label class="lbl">${esc(t('set.repeatPass'))}</label>
+        <input type="password" id="p2" inputmode="numeric" maxlength="4" pattern="[0-9]*" autocomplete="off"></div>
+      <div class="field"><button class="btn ghost" data-act="setPass">${esc(t('set.changePass'))}</button></div>
+    </div>
+
+    <div class="sec">${esc(t('set.data'))}</div>
+    <div class="card">
+      <div class="hint" style="margin:0 0 12px">${esc(t('set.storage', { people: state.people.length, photos: photos.length, size: fmtBytes(bytes) }))}</div>
+      <div class="field"><button class="btn ghost" data-act="exportData">${esc(t('set.export'))}</button></div>
+      <div class="field"><button class="btn ghost" data-act="importData">${esc(t('set.import'))}</button></div>
+      <div class="field"><button class="btn ghost danger" data-act="wipe">${esc(t('set.wipe'))}</button></div>
+    </div>
+
+    <div class="sec">${esc(t('set.about'))}</div>
+    <div class="card"><div class="hint" style="margin:0">${esc(t('set.aboutText'))}</div></div>
+    <div class="hint" style="text-align:center;margin-top:18px">Palantir · v1.0</div>
+  `;
+
+  $('#apiKey').addEventListener('change', async e => {
+    state.settings.apiKey = e.target.value.trim();
+    await saveSettings();
+    toast(t('per.saved'));
+  });
+  $('#model').addEventListener('change', async e => {
+    state.settings.model = e.target.value;
+    await saveSettings();
+  });
+}
+
+async function testKey(){
+  const label = $('#testLabel');
+  const key = ($('#apiKey')?.value || '').trim();
+  state.settings.apiKey = key;
+  await saveSettings();
+  label.innerHTML = '<span class="spin"></span>';
+  try {
+    await callClaude({
+      model: state.settings.model || DEFAULT_MODEL,
+      max_tokens: 64,
+      messages: [{ role: 'user', content: 'Reply with the single word: ok' }],
+    });
+    toast(t('set.keyOk'));
+  } catch (err){
+    toast(t('set.keyBad', { e: err.message === 'NO_KEY' ? '—' : err.message }), 6000);
+  } finally {
+    label.textContent = t('set.test');
+  }
+}
+
+/* ------------------------------ backup ------------------------------- */
+async function exportData(){
+  const photos = await DB.all('photos');
+  const out = {
+    app: 'palantir', version: 1, exportedAt: nowISO(),
+    settings: { lang: state.settings.lang, model: state.settings.model, categories: state.settings.categories },
+    people: state.people,
+    photos: [],
+  };
+  for (const ph of photos){
+    if (ph.personId === '__draft__' || !ph.personId) continue;
+    out.photos.push({ id: ph.id, personId: ph.personId, w: ph.w, h: ph.h, createdAt: ph.createdAt,
+                      data: await blobToDataURL(ph.blob) });
+  }
+  const blob = new Blob([JSON.stringify(out)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'palantir-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+function pickFile(accept, multiple = false){
+  return new Promise(res => {
+    const i = document.createElement('input');
+    i.type = 'file'; i.accept = accept; i.multiple = multiple;
+    i.style.position = 'fixed'; i.style.left = '-9999px';
+    document.body.appendChild(i);
+    i.addEventListener('change', () => { res(Array.from(i.files || [])); i.remove(); }, { once: true });
+    i.click();
+  });
+}
+
+async function importData(){
+  const [file] = await pickFile('application/json,.json');
+  if (!file) return;
+  let data;
+  try { data = JSON.parse(await file.text()); } catch { toast(t('set.badFile')); return; }
+  if (!data || data.app !== 'palantir' || !Array.isArray(data.people)){ toast(t('set.badFile')); return; }
+  if (!await confirmSheet(t('set.import'), t('set.importQ'))) return;
+
+  for (const u of urlCache.values()) URL.revokeObjectURL(u);
+  urlCache.clear();
+  photoRecCache.clear();
+  await DB.clear('people'); await DB.clear('photos');
+  for (const p of data.people) await DB.put('people', p);
+  for (const ph of data.photos || []){
+    try {
+      await DB.put('photos', { id: ph.id, personId: ph.personId, w: ph.w, h: ph.h,
+                               createdAt: ph.createdAt, blob: dataURLToBlob(ph.data) });
+    } catch { /* skip a broken photo rather than lose the whole restore */ }
+  }
+  if (data.settings){
+    state.settings.categories = data.settings.categories || [];
+    state.settings.model = data.settings.model || state.settings.model;
+    await saveSettings();
+  }
+  state.photosOf.clear();
+  await loadPeople();
+  toast(t('set.imported', { n: data.people.length }));
+  render();
+}
+
+async function wipeAll(){
+  if (!await confirmSheet(t('set.wipe'), t('set.wipeQ'))) return;
+  for (const u of urlCache.values()) URL.revokeObjectURL(u);
+  urlCache.clear();
+  photoRecCache.clear();
+  await DB.clear('people'); await DB.clear('photos'); await DB.clear('meta');
+  state.people = []; state.photosOf.clear(); state.review = null;
+  state.draft = { text: '', photos: [] };
+  state.settings.pass = await sha('3671');
+  state.settings.apiKey = '';
+  state.settings.categories = [];
+  await saveSettings();
+  toast(t('c.done'));
+  if (location.hash === '#/capture') render(); else go('#/capture');
+}
+
+/* ------------------------------- modals ------------------------------ */
+function closeSheet(){ $('#modal').classList.remove('on'); $('#sheet').innerHTML = ''; }
+function confirmSheet(title, body, danger = true){
+  return new Promise(res => {
+    $('#sheet').innerHTML = `
+      <h2>${esc(title)}</h2>
+      <p style="color:var(--dim);font-size:14.5px;line-height:1.55;margin:0 0 18px">${esc(body)}</p>
+      <div style="display:grid;gap:10px">
+        <button class="btn ${danger ? 'danger' : 'primary'}" data-yes>${esc(danger ? t('c.delete') : t('c.ok'))}</button>
+        <button class="btn ghost" data-no>${esc(t('c.cancel'))}</button>
+      </div>`;
+    $('#modal').classList.add('on');
+    const done = v => { closeSheet(); res(v); };
+    $('#sheet [data-yes]').onclick = () => done(true);
+    $('#sheet [data-no]').onclick = () => done(false);
+    $('#modal').onclick = e => { if (e.target.id === 'modal') done(false); };
+  });
+}
+function photoSheet(personId, photoId){
+  const p = state.people.find(x => x.id === personId);
+  $('#sheet').innerHTML = `
+    <h2>${esc(t('per.photos'))}</h2>
+    <div style="display:grid;gap:10px">
+      <button class="btn ghost" data-act="viewPhoto" data-pid="${photoId}">${esc(t('per.viewPhoto'))}</button>
+      <button class="btn ghost" data-act="makeAvatar" data-id="${personId}" data-pid="${photoId}" ${p.avatarId === photoId ? 'disabled' : ''}>${esc(t('per.setAvatar'))}</button>
+      <button class="btn ghost danger" data-act="delPhoto" data-id="${personId}" data-pid="${photoId}">${esc(t('per.delPhoto'))}</button>
+      <button class="btn ghost" data-act="closeSheet">${esc(t('c.cancel'))}</button>
+    </div>`;
+  $('#modal').classList.add('on');
+  $('#modal').onclick = e => { if (e.target.id === 'modal') closeSheet(); };
+}
+
+/* ===================================================================== */
+/*                            event delegation                           */
+/* ===================================================================== */
+document.addEventListener('click', async e => {
+  const keyBtn = e.target.closest('[data-key]');
+  if (keyBtn){ pressKey(keyBtn.dataset.key); return; }
+
+  const goEl = e.target.closest('[data-go]');
+  if (goEl){ go(goEl.dataset.go); return; }
+
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const a = el.dataset.act;
+  const id = el.dataset.id, pid = el.dataset.pid;
+
+  switch (a){
+    /* --- capture --- */
+    case 'newPerson': go('#/edit/new'); break;
+    case 'pickPhoto': {
+      const files = await pickFile('image/*', true);
+      for (const f of files){
+        const rec = await ingestPhoto(f, '__draft__');
+        state.draft.photos.push(rec);
+      }
+      if (files.length) render();
+      break;
+    }
+    case 'dropDraftPhoto': {
+      forgetURL(id);
+      await DB.del('photos', id);
+      state.draft.photos = state.draft.photos.filter(p => p.id !== id);
+      render();
+      break;
+    }
+    case 'clearDraft': {
+      if (!await confirmSheet(t('cap.clear'), t('c.confirm'))) break;
+      await clearDraft();
+      render();
+      break;
+    }
+
+    /* --- review --- */
+    case 'rvToggle': {
+      const e0 = state.review.entries[+el.dataset.e];
+      e0.on = !e0.on;
+      await DB.put('meta', state.review, 'review');
+      render();
+      break;
+    }
+    case 'rvChange': {
+      const c = state.review.entries[+el.dataset.e].changes[+el.dataset.c];
+      c.on = !c.on;
+      await DB.put('meta', state.review, 'review');
+      render();
+      break;
+    }
+    case 'rvFact': {
+      const f = state.review.entries[+el.dataset.e].facts[+el.dataset.f];
+      f.on = !f.on;
+      await DB.put('meta', state.review, 'review');
+      render();
+      break;
+    }
+    case 'applyReview': {
+      const n = await applyReview();
+      toast(t('rev.applied', { n }));
+      go('#/people');
+      break;
+    }
+    case 'discardReview': {
+      if (!await confirmSheet(t('rev.discard'), t('rev.discardQ'))) break;
+      state.review = null;
+      await DB.del('meta', 'review');
+      go('#/capture');
+      break;
+    }
+
+    /* --- people --- */
+    case 'filter': {
+      state.filter = el.dataset.cat;
+      $$('#chips .chip').forEach(c => c.classList.toggle('on', c.dataset.cat === state.filter));
+      paintPeopleList();
+      break;
+    }
+
+    /* --- person --- */
+    case 'addFact': addFact(id); break;
+    case 'delFact': {
+      const p = state.people.find(x => x.id === id);
+      p.facts = (p.facts || []).filter(f => f.id !== el.dataset.fid);
+      await savePerson(p);
+      render();
+      break;
+    }
+    case 'pickPersonPhoto': {
+      const files = await pickFile('image/*', true);
+      const p = state.people.find(x => x.id === id);
+      for (const f of files){
+        const rec = await ingestPhoto(f, id);
+        if (!p.avatarId){ p.avatarId = rec.id; await savePerson(p); }
+      }
+      if (files.length){ invalidatePhotos(id); render(); }
+      break;
+    }
+    case 'photoMenu': photoSheet(id, pid); break;
+    case 'viewPhoto': {
+      const rec = await DB.get('photos', pid);
+      if (rec){ $('#viewerImg').src = photoURL(rec); $('#viewer').classList.add('on'); }
+      closeSheet();
+      break;
+    }
+    case 'makeAvatar': {
+      const p = state.people.find(x => x.id === id);
+      p.avatarId = pid;
+      await savePerson(p);
+      closeSheet(); render();
+      break;
+    }
+    case 'delPhoto': {
+      closeSheet();
+      if (!await confirmSheet(t('per.delPhoto'), t('c.confirm'))) break;
+      const p = state.people.find(x => x.id === id);
+      forgetURL(pid);
+      await DB.del('photos', pid);
+      if (p.avatarId === pid){
+        const rest = (await DB.byPerson(id)).filter(x => x.id !== pid);
+        p.avatarId = rest[0]?.id || '';
+        await savePerson(p);
+      }
+      invalidatePhotos(id);
+      render();
+      break;
+    }
+    case 'delPerson': {
+      const p = state.people.find(x => x.id === id);
+      if (!await confirmSheet(t('per.delete'), t('per.deleteQ', { name: p.name }))) break;
+      for (const ph of await DB.byPerson(id)){ forgetURL(ph.id); await DB.del('photos', ph.id); }
+      await DB.del('people', id);
+      state.people = state.people.filter(x => x.id !== id);
+      invalidatePhotos(id);
+      go('#/people');
+      break;
+    }
+
+    /* --- edit --- */
+    case 'cancelEdit': {
+      const back = state.editing && state.people.some(x => x.id === state.editing.id)
+        ? '#/person/' + state.editing.id : '#/people';
+      state.editing = null;
+      go(back);
+      break;
+    }
+    case 'saveEdit': {
+      const p = collectEdit();
+      if (!p.name.trim()){ toast(t('per.nameReq')); break; }
+      const isNew = el.dataset.new === '1';
+      await savePerson(p);
+      state.editing = null;
+      toast(isNew ? t('per.added', { name: p.name }) : t('per.saved'));
+      location.hash = '#/person/' + p.id;
+      break;
+    }
+
+    /* --- settings --- */
+    case 'setLang': {
+      state.settings.lang = el.dataset.lang;
+      state.lang = state.settings.lang;
+      await saveSettings();
+      applyLang();
+      sortPeople();
+      render();
+      break;
+    }
+    case 'testKey': testKey(); break;
+    case 'addCat': {
+      const inp = $('#newCat');
+      const v = (inp.value || '').trim();
+      if (!v) break;
+      const key = v.toLowerCase();
+      if (allCats().some(c => c.toLowerCase() === key || catLabel(c).toLowerCase() === key)){ inp.value = ''; break; }
+      state.settings.categories = uniq([...(state.settings.categories || []), v]);
+      await saveSettings();
+      inp.value = '';
+      render();
+      break;
+    }
+    case 'delCat': {
+      const c = el.dataset.cat;
+      const used = state.people.filter(p => p.category === c).length;
+      if (used){ toast(t('set.catUsed', { n: used })); break; }
+      state.settings.categories = (state.settings.categories || []).filter(x => x !== c);
+      await saveSettings();
+      render();
+      break;
+    }
+    case 'setPass': {
+      const a1 = ($('#p1').value || '').trim(), a2 = ($('#p2').value || '').trim();
+      if (!/^\d{4}$/.test(a1)){ toast(t('set.passShort')); break; }
+      if (a1 !== a2){ toast(t('set.passMismatch')); break; }
+      state.settings.pass = await sha(a1);
+      await saveSettings();
+      $('#p1').value = ''; $('#p2').value = '';
+      toast(t('set.passSaved'));
+      break;
+    }
+    case 'exportData': exportData(); break;
+    case 'importData': importData(); break;
+    case 'wipe': wipeAll(); break;
+    case 'closeSheet': closeSheet(); break;
+  }
+});
+
+document.addEventListener('change', async e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  if (el.dataset.act === 'rvCat'){
+    state.review.entries[+el.dataset.e].category = el.value;
+    await DB.put('meta', state.review, 'review');
+  }
+  if (el.dataset.act === 'rvPhotoMove'){
+    const pid = el.dataset.pid, to = el.value;
+    for (const entry of state.review.entries) entry.photos = entry.photos.filter(x => x !== pid);
+    if (to !== '-') state.review.entries[+to].photos.push(pid);
+    await DB.put('meta', state.review, 'review');
+    render();
+  }
+});
+document.addEventListener('input', async e => {
+  const el = e.target.closest('[data-act="rvName"]');
+  if (!el) return;
+  state.review.entries[+el.dataset.e].name = el.value;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => DB.put('meta', state.review, 'review'), 400);
+});
+
+$('#viewer').addEventListener('click', () => {
+  $('#viewer').classList.remove('on');
+  $('#viewerImg').src = '';
+});
+
+window.addEventListener('hashchange', render);
+
+/* ------------------------------- boot -------------------------------- */
+function applyLang(){
+  const rtl = state.lang === 'he';
+  document.documentElement.lang = state.lang;
+  document.documentElement.dir = rtl ? 'rtl' : 'ltr';
+  $$('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+}
+
+(async function boot(){
+  buildPad();
+  await loadSettings();
+  applyLang();
+  await loadPeople();
+  await loadDraft();
+  state.review = (await DB.get('meta', 'review')) || null;
+  if (!location.hash) location.hash = '#/capture';
+  if ('serviceWorker' in navigator){
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+  }
+})();
+</script>
+</body>
+</html>
