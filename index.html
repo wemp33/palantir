@@ -368,6 +368,7 @@ const I18N = {
     'cap.empty': 'Write or dictate something first.',
     'cap.noKey': 'Add a Claude API key in Settings to sort automatically — or add people by hand.',
     'cap.noMic': 'Dictation is not available in this browser.',
+    'cap.reviewWaiting': 'You have suggestions waiting — review them',
     'cap.upcoming': 'Birthdays coming up',
     'cap.recent': 'Recently updated',
     'cap.addManual': 'Add someone by hand',
@@ -454,6 +455,7 @@ const I18N = {
     'cap.empty': 'Najpierw coś napisz albo podyktuj.',
     'cap.noKey': 'Dodaj klucz API Claude w Ustawieniach, żeby sortować automatycznie — albo dopisuj ludzi ręcznie.',
     'cap.noMic': 'Dyktowanie nie działa w tej przeglądarce.',
+    'cap.reviewWaiting': 'Czekają propozycje — sprawdź je',
     'cap.upcoming': 'Zbliżające się urodziny',
     'cap.recent': 'Ostatnio zmienione',
     'cap.addManual': 'Dodaj osobę ręcznie',
@@ -540,6 +542,7 @@ const I18N = {
     'cap.empty': 'כתוב או הכתב משהו קודם.',
     'cap.noKey': 'הוסף מפתח API של Claude בהגדרות כדי למיין אוטומטית — או הוסף אנשים ידנית.',
     'cap.noMic': 'הכתבה אינה זמינה בדפדפן הזה.',
+    'cap.reviewWaiting': 'יש הצעות שממתינות — עבור עליהן',
     'cap.upcoming': 'ימי הולדת קרובים',
     'cap.recent': 'עודכנו לאחרונה',
     'cap.addManual': 'הוסף אדם ידנית',
@@ -1284,6 +1287,9 @@ async function viewCapture(view){
     ${state.draft.photos.length ? `<div class="thumbs">${state.draft.photos.map(p =>
       `<div class="thumb"><img src="${photoURL(p)}" alt=""><button data-act="dropDraftPhoto" data-id="${p.id}" aria-label="${esc(t('c.delete'))}">×</button></div>`
     ).join('')}</div>` : ''}
+
+    ${state.review && state.review.entries.length ? `<div style="margin-top:14px">
+      <button class="btn" data-go="#/review">${esc(t('cap.reviewWaiting'))}</button></div>` : ''}
 
     <div style="margin-top:14px">
       <button class="btn primary" id="sortBtn" ${hasKey ? '' : 'disabled'}>
