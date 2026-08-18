@@ -9,11 +9,14 @@
 <meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<!-- `black` and not `black-translucent`: translucent hands the web view the whole
-     screen but reports a shorter viewport in standalone mode, which strands the
-     tab bar above a band of background. `black` lays the view out below the
-     status bar, where every height measurement agrees. -->
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<!-- `black-translucent` + viewport-fit=cover is the one combination that gives a
+     Home-Screen app the entire screen. With `black`, iOS reserves its own chrome
+     and hands the page a shorter canvas — the dead strip under the tab bar that
+     no CSS can reach, because it is outside the web view. The status bar and the
+     home indicator are handled inside the page via the safe-area insets, which
+     the top bar and tab bar already pad for. Install-time setting: changing it
+     requires removing the icon and adding the app to the Home Screen again. -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Palantir">
 <meta name="format-detection" content="telephone=no">
 <meta name="robots" content="noindex, nofollow">
