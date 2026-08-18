@@ -38,7 +38,7 @@
   --dim:#A6B5CA;
   --faint:#75879F;   /* 5:1 on the page ground — micro-labels stay legible */
   --white:#fff;
-  --bar:#0A1220;          /* opaque chrome: bars, and the ground behind them */
+  --bar:#152134;          /* opaque chrome — clearly lighter than the page */
   --danger:#FF9E96;
   --r:18px;
   --r-sm:13px;
@@ -113,7 +113,8 @@ h1,h2,h3{margin:0;font-family:var(--serif);font-weight:600;letter-spacing:-.005e
    a measured --vh rather than 100% / 100dvh, because Safari resolves those
    against a layout viewport that does not always match what you can see. */
 #app{
-  position:fixed;inset:0;               /* bottom:0, never a computed height */
+  position:fixed;top:0;left:0;right:0;
+  height:var(--appH, 100vh);            /* the tallest measure the page is given */
   display:none;flex-direction:column;overflow:hidden;
   /* a soft light off the stone at the top, settling into black at the foot */
   background:
@@ -3275,6 +3276,23 @@ $('#viewer').addEventListener('click', () => {
 window.addEventListener('hashchange', render);
 
 /* ------------------------------- boot -------------------------------- */
+/* iOS can hand a Home-Screen app a window shorter than the glass while 100vh
+   still reports the full height. Taking the largest of every measure available
+   claims that strip; when they all agree, nothing changes. */
+function fitShell(){
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;left:-9999px;top:0;width:0;height:100vh;pointer-events:none';
+  document.body.appendChild(probe);
+  const vh = probe.offsetHeight;
+  probe.remove();
+  const h = Math.max(window.innerHeight || 0, document.documentElement.clientHeight || 0, vh || 0);
+  if (h) document.documentElement.style.setProperty('--appH', h + 'px');
+}
+fitShell();
+addEventListener('resize', fitShell);
+addEventListener('orientationchange', () => setTimeout(fitShell, 150));
+addEventListener('pageshow', fitShell);
+
 function applyLang(){
   const rtl = state.lang === 'he';
   document.documentElement.lang = state.lang;
