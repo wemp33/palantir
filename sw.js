@@ -1,6 +1,6 @@
 /* Palantir — offline shell. The app is one HTML file plus icons; profile data
    never goes near the cache (it lives in IndexedDB). Bump CACHE on release. */
-const CACHE = 'palantir-v9';
+const CACHE = 'palantir-v10';
 const SHELL = [
   './',
   './index.html',

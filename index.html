@@ -448,6 +448,11 @@ main.map-view{padding:0;overflow:hidden}
 .chip .crown{vertical-align:-2px;margin-inline-end:2px}
 .chip.on .crown{color:var(--gold-dim);fill:var(--gold-dim)}
 
+#reinstall{
+  position:fixed;left:10px;right:10px;bottom:10px;z-index:76;
+  background:#1C2B14;border:1px solid rgba(190,230,140,.45);border-radius:12px;
+  color:#D6EFB5;font-size:12.5px;line-height:1.5;padding:10px 13px;text-align:center;
+}
 /* only ever visible when the bar genuinely is not on the bottom edge */
 #seal{
   position:fixed;left:0;right:0;bottom:0;z-index:75;background:var(--bar);
@@ -623,6 +628,7 @@ const I18N = {
     'map.kinds': 'Kinds of place',
     'map.locating': 'Placing {n}…', 'map.noPlaces': 'Nothing to put on the map yet.\nAdd where someone lives or works.',
     'map.setOnMap': 'Place by hand', 'c.close': 'Close',
+    'ios.reinstall': 'iOS installed this app with an old setting, so the screen ends early here. Remove the icon, open the site in Safari and Add to Home Screen again — your people and photos stay.',
     'map.missing': '{n} not placed', 'map.missingTitle': 'Not placed yet',
     'map.missingLede': "These addresses couldn't be found. Tap one, then tap the map where it belongs.",
     'map.tapToSet': 'Tap the map to place {label}', 'map.pinSet': 'Placed.',
@@ -733,6 +739,7 @@ const I18N = {
     'map.kinds': 'Rodzaje miejsc',
     'map.locating': 'Ustawiam {n}…', 'map.noPlaces': 'Nie ma jeszcze czego pokazać.\nDopisz, gdzie ktoś mieszka albo pracuje.',
     'map.setOnMap': 'Wskaż ręcznie', 'c.close': 'Zamknij',
+    'ios.reinstall': 'iOS zainstalował tę aplikację ze starym ustawieniem i ekran kończy się tutaj za wcześnie. Usuń ikonę, otwórz stronę w Safari i dodaj ją ponownie do ekranu początkowego — osoby i zdjęcia zostaną.',
     'map.missing': 'Bez pinezki: {n}', 'map.missingTitle': 'Jeszcze bez pinezki',
     'map.missingLede': 'Tych adresów nie udało się znaleźć. Dotknij jednego, a potem miejsca na mapie.',
     'map.tapToSet': 'Dotknij mapy, żeby wskazać: {label}', 'map.pinSet': 'Ustawiono.',
@@ -843,6 +850,7 @@ const I18N = {
     'map.kinds': 'סוגי מקומות',
     'map.locating': 'ממקם {n}…', 'map.noPlaces': 'אין עדיין מה להציג על המפה.\nהוסף היכן מישהו גר או עובד.',
     'map.setOnMap': 'מקם ידנית', 'c.close': 'סגור',
+    'ios.reinstall': 'iOS התקין את האפליקציה עם הגדרה ישנה, ולכן המסך נגמר כאן מוקדם מדי. הסר את הסמל, פתח את האתר בספארי והוסף שוב למסך הבית — האנשים והתמונות נשמרים.',
     'map.missing': '{n} ללא סיכה', 'map.missingTitle': 'עדיין ללא סיכה',
     'map.missingLede': 'הכתובות האלה לא נמצאו. הקש על אחת ואז על המקום הנכון במפה.',
     'map.tapToSet': 'הקש על המפה כדי למקם את {label}', 'map.pinSet': 'מוקם.',
@@ -1986,6 +1994,20 @@ const scrollMem = new Map();
 function checkSeal(){
   const bar = $('#tabs');
   if (!bar || !$('#app').classList.contains('on')) return;
+  /* An icon added while the status-bar mode was wrong carries a window that
+     ends above the bottom of the glass — nothing rendered here can reach the
+     dead strip below it. Detectable: iOS standalone, window shorter than the
+     screen. Say so where the band starts, on the device, in its language. */
+  const brokenWrapper = navigator.standalone === true && (screen.height - window.innerHeight) > 50;
+  let note = $('#reinstall');
+  if (brokenWrapper){
+    if (!note){
+      note = document.createElement('div');
+      note.id = 'reinstall';
+      document.body.appendChild(note);
+    }
+    note.textContent = t('ios.reinstall');
+  } else note?.remove();
   const r = bar.getBoundingClientRect();
   const gap = Math.round(window.innerHeight - r.bottom);
   let strip = $('#seal');
